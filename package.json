@@ -1,6 +1,6 @@
 {
-	"name": "gnucobol-debug",
-	"displayName": "COBOL debugger",
+	"name": "superbol-vscode-debug",
+	"displayName": "Superbol debugger",
 	"description": "Debug or execute COBOL code. No mainframe required.",
 	"keywords": [
 		"cobol",
@@ -10,7 +10,17 @@
 		"code coverage"
 	],
 	"version": "2.31.37",
-	"publisher": "OlegKunitsyn",
+	"publisher": "OCamlPro SAS",
+    "contributors": [
+        {
+            "name": "Emilien Lemaire",
+            "email": "emilien.lemaire@ocamlpro.com"
+        },
+        {
+            "name": "Olegs Kunicins",
+            "email": "olegs.kunicins@gmail.com"
+        }
+    ],
 	"license": "GPL-3.0",
 	"icon": "icon.png",
 	"engines": {
@@ -18,16 +28,14 @@
 	},
 	"main": "./out/src/extension",
 	"activationEvents": [
-		"onDebugResolve",
-		"onCommand:gnucobol-debug.dockerStart",
-		"onCommand:gnucobol-debug.dockerStop"
+		"onDebugResolve"
 	],
 	"categories": [
 		"Debuggers"
 	],
 	"repository": {
 		"type": "git",
-		"url": "https://github.com/OlegKunitsyn/gnucobol-debug.git"
+		"url": "https://github.com/OCamlPro/superbol-vscode-debug.git"
 	},
 	"capabilities": {
 		"untrustedWorkspaces": {
@@ -35,39 +43,15 @@
 		}
 	},
 	"contributes": {
-		"commands": [
-			{
-				"command": "gnucobol-debug.dockerStart",
-				"title": "GnuCOBOL Docker: start"
-			},
-			{
-				"command": "gnucobol-debug.dockerStop",
-				"title": "GnuCOBOL Docker: stop"
-			}
-		],
 		"breakpoints": [
 			{
 				"language": "cobol"
-			},
-			{
-				"language": "COBOL"
-			},
-			{
-				"language": "ACUCOBOL"
-			},
-			{
-				"language": "OpenCOBOL"
-			},
-			{
-				"language": "GnuCOBOL"
-			},
-			{
-				"language": "entcobol"
 			}
 		],
 		"debuggers": [
 			{
 				"type": "gdb",
+				"languages": ["cobol", "COBOL"],
 				"program": "./out/src/gdb.js",
 				"runtime": "node",
 				"label": "COBOL debugger",
@@ -94,11 +78,6 @@
 								"type": "string",
 								"description": "Path to gdb",
 								"default": "gdb"
-							},
-							"docker": {
-								"type": "string",
-								"description": "Docker image",
-								"default": "olegkunitsyn/gnucobol:3.1-dev"
 							},
 							"cobcpath": {
 								"type": "string",
@@ -201,7 +180,7 @@
 				},
 				"initialConfigurations": [
 					{
-						"name": "COBOL debugger",
+						"name": "Superbol debugger",
 						"type": "gdb",
 						"request": "launch",
 						"cobcargs": [
@@ -209,59 +188,69 @@
 							"-x"
 						],
 						"coverage": true
+					}
+				],
+				"configurationSnippets": [
+					{
+						"label": "Superbol: debug launch",
+						"description": "New Superbol launch request",
+						"body": {
+							"type": "gdb",
+							"request": "launch",
+							"name": "${2: Superbol debugger}"
+						}
 					},
 					{
-						"name": "COBOL debugger attach local",
-						"type": "gdb",
-						"request": "attach",
-						"cobcargs": [
-							"-free",
-							"-x"
-						],
-						"pid": "${input:pid}"
+						"label": "Superbol: debug attach local",
+						"description": "New Superbol attach local request",
+						"body": {
+							"type": "gdb",
+							"request": "attach",
+							"name": "${2: Superbol debugger}",
+							"pid": "${3:0}"
+						}
 					},
 					{
-						"name": "COBOL debugger attach remote",
-						"type": "gdb",
-						"request": "attach",
-						"cobcargs": [
-							"-free",
-							"-x"
-						],
-						"remoteDebugger": "${input:remoteDebugger}"
+						"label": "Superbol: debug attach remote",
+						"description": "New Superbol attach remote request",
+						"body": {
+							"type": "gdb",
+							"request": "attach",
+							"name": "${2: Superbol debugger}",
+							"remoteDebugger": "${3:host:port}"
+						}
 					}
 				]
 			}
 		],
 		"configuration": {
-			"type": "object",
-			"title": "COBOL Debugger",
+			"title": "Superbol Debugger",
 			"properties": {
-				"Cobol_Debugger.display_variable_attributes": {
+				"superbol_debugger.display_variable_attributes": {
 					"type": "boolean",
 					"default": false,
 					"description": "Displaying Data Storages and Fields attributes(e.g. size of Alphanumerics or digits and scale of numerics).",
 					"scope": "resource"
 				},
-				"Cobol_Debugger.cwd": {
+				"superbol_debugger.cwd": {
 					"type": "string",
 					"default": "${workspaceRoot}",
 					"description": "Path to project",
 					"scope": "application"
 				},
-				"Cobol_Debugger.target": {
+				"superbol_debugger.target": {
 					"type": "string",
 					"description": "Path to source code",
 					"default": "${file}",
 					"scope": "application"
 				},
-				"Cobol_Debugger.gdbpath": {
+				"superbol_debugger.gdbpath": {
 					"type": "string",
 					"description": "Path to gdb",
 					"default": "gdb",
 					"scope": "application"
 				},
-				"Cobol_Debugger.cobcpath": {
+				"superbol_debugger.cobcpath": {
 					"type": "string",
 					"description": "Path to cobc",
 					"default": "cobc",
@@ -277,18 +266,20 @@
 		"test": "mocha -u tdd ./out/test/"
 	},
 	"devDependencies": {
-		"@types/node": "^13.13.0",
-		"@types/mocha": "^5.2.7",
+		"@types/mocha": "^10.0.1",
+		"@types/node": "^20.3.2",
 		"@types/vscode": "^1.44.0",
-		"typescript": "^3.8.3",
-		"mocha": "^6.2.0",
-		"vscode-debugadapter-testsupport": "^1.40.3",
-		"tslint": "^5.18.0"
+		"@typescript-eslint/eslint-plugin": "^5.60.1",
+		"@typescript-eslint/parser": "^5.60.1",
+		"eslint": "^8.43.0",
+		"eslint_d": "^12.2.1",
+		"mocha": "^10.2.0",
+		"typescript": "^5.1.6",
+		"vscode-debugadapter-testsupport": "^1.40.3"
 	},
 	"dependencies": {
-		"gcov-parse": "^1.0.1",
-		"n-readlines": "^1.0.0",
-		"vscode-debugadapter": "^1.40.0",
-		"vscode-debugprotocol": "^1.40.0"
+		"@vscode/debugadapter": "^1.40.0",
+		"@vscode/debugprotocol": "^1.40.0",
+		"n-readlines": "^1.0.0"
 	}
 }

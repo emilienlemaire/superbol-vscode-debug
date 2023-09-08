@@ -1,14 +1,27 @@
 import * as vscode from 'vscode';
 
+type InspectResult<T> = {
+  key: string;
+  defaultValue?: T;
+  globalValue?: T;
+  workspaceValue?: T;
+  workspaceFolderValue?: T;
+  defaultLanguageValue?: T;
+  globalLanguageValue?: T;
+  workspaceLanguageValue?: T;
+  workspaceFolderLanguageValue?: T;
+  languageIds?: string[];
+} | undefined
+
 export class DebuggerSettings {
     private readonly extensionSettings: vscode.WorkspaceConfiguration;
 
     constructor() {
-        this.extensionSettings = vscode.workspace.getConfiguration("Cobol_Debugger");
+        this.extensionSettings = vscode.workspace.getConfiguration("superbol_debugger");
     }
 
     private getWithFallback<T>(settings: vscode.WorkspaceConfiguration, section: string): T {
-        const info: any = settings.inspect<T>(section);
+        const info: InspectResult<T> = settings.inspect<T>(section);
         if (info.workspaceFolderValue !== undefined) {
             return info.workspaceFolderValue;
         } else if (info.workspaceValue !== undefined) {
