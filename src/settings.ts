@@ -15,9 +15,14 @@ type InspectResult<T> = {
 
 export class DebuggerSettings {
     private readonly extensionSettings: vscode.WorkspaceConfiguration;
+    private readonly superbolExtensionSettings: vscode.WorkspaceConfiguration;
 
     constructor() {
-        this.extensionSettings = vscode.workspace.getConfiguration("superbol_debugger");
+        this.extensionSettings = vscode.workspace.getConfiguration("superbol-vscode-debug");
+        this.superbolExtensionSettings = vscode.workspace.getConfiguration("superbol");
+
+console.log(this.getWithFallback<string>(this.superbolExtensionSettings, "path"));
+
     }
 
     private getWithFallback<T>(settings: vscode.WorkspaceConfiguration, section: string): T {
@@ -33,22 +38,18 @@ export class DebuggerSettings {
     }
 
     public get displayVariableAttributes(): boolean {
-        return this.getWithFallback<boolean>(this.extensionSettings, "display_variable_attributes");
-    }
-
-    public get cwd(): string {
-        return this.getWithFallback<string>(this.extensionSettings, "cwd");
-    }
-
-    public get target(): string {
-        return this.getWithFallback<string>(this.extensionSettings, "target");
+        return this.getWithFallback<boolean>(this.extensionSettings, "displayVariableAttributes");
     }
 
     public get gdbpath(): string {
-        return this.getWithFallback<string>(this.extensionSettings, "gdbpath");
+        return this.getWithFallback<string>(this.extensionSettings, "pathToGDB");
     }
 
     public get cobcpath(): string {
-        return this.getWithFallback<string>(this.extensionSettings, "cobcpath");
+        return this.getWithFallback<string>(this.extensionSettings, "pathToCobc");
+    }
+
+    public get libcobpath(): string {
+        return this.getWithFallback<string>(this.extensionSettings, "pathToLibCob");
     }
 }
