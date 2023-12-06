@@ -45,12 +45,6 @@ class GdbConfigurationProvider implements vscode.DebugConfigurationProvider {
         if (config.gdbpath === undefined) {
             config.gdbpath = settings.gdbpath;
         }
-        if (config.cobcpath === undefined) {
-            config.cobcpath = settings.cobcpath;
-        }
-        if (config.cobcargs === undefined) {
-            config.cobcargs = ["-free", "-x"];
-        }
         if (config.libcobpath === undefined) {
             config.libcobpath = settings.libcobpath;
         }
@@ -78,7 +72,6 @@ class GdbConfigurationProvider implements vscode.DebugConfigurationProvider {
           arguments: "",
           cwd: "${workspaceRoot}",
           group: [],
-          cobcargs: ["-free", "-x"],
           coverage: true,
           verbose: false
         };
@@ -92,7 +85,6 @@ class GdbConfigurationProvider implements vscode.DebugConfigurationProvider {
           arguments: "",
           cwd: "${workspaceRoot}",
           group: [],
-          cobcargs: ["-free", "-x"],
           verbose: false
         };
 
@@ -105,7 +97,6 @@ class GdbConfigurationProvider implements vscode.DebugConfigurationProvider {
           arguments: "",
           cwd: "${workspaceRoot}",
           group: [],
-          cobcargs: ["-free", "-x"],
           verbose: false
         }
 

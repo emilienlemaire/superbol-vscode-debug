@@ -33,8 +33,6 @@ export interface LaunchRequestArguments extends DebugProtocol.LaunchRequestArgum
   arguments: string;
   gdbpath: string;
   gdbargs: string[];
-  cobcpath: string;
-  cobcargs: string[];
   env: NodeJS.ProcessEnv;
   group: string[];
   verbose: boolean;
@@ -47,8 +45,6 @@ export interface AttachRequestArguments extends DebugProtocol.LaunchRequestArgum
   arguments: string;
   gdbpath: string;
   gdbargs: string[];
-  cobcpath: string;
-  cobcargs: string[];
   env: NodeJS.ProcessEnv;
   group: string[];
   verbose: boolean;
@@ -96,8 +92,6 @@ export class GDBDebugSession extends DebugSession {
       new MI2(
         args.gdbpath,
         args.gdbargs,
-        args.cobcpath,
-        args.cobcargs,
         args.env,
         args.verbose,
         args.noDebug);
@@ -159,8 +153,6 @@ export class GDBDebugSession extends DebugSession {
     this.miDebugger = new MI2(
       args.gdbpath,
       args.gdbargs,
-      args.cobcpath,
-      args.cobcargs,
       args.env,
       args.verbose,
       false);

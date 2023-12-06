@@ -80,20 +80,10 @@
 								"description": "Path to gdb",
 								"default": "gdb"
 							},
-							"cobcpath": {
-								"type": "string",
-								"description": "Path to cobc",
-								"default": "cobc"
-							},
 							"libcobpath": {
 								"type": "string",
 								"description": "Path to libcob",
 								"default": null
-							},
-							"cobcargs": {
-								"type": "array",
-								"description": "Extra arguments for cobc",
-								"default": ["-free", "-x"]
 							},
 							"group": {
 								"type": "array",
@@ -140,20 +130,10 @@
 								"description": "Path to gdb",
 								"default": "gdb"
 							},
-							"cobcpath": {
-								"type": "string",
-								"description": "Path to cobc",
-								"default": "cobc"
-							},
 							"libcobpath": {
 								"type": "string",
 								"description": "Path to libcob",
 								"default": null
-							},
-							"cobcargs": {
-								"type": "array",
-								"description": "Extra arguments for cobc",
-								"default": ["-free", "-x"]
 							},
 							"group": {
 								"type": "array",
@@ -195,7 +175,6 @@
 							"arguments": "",
 							"cwd": "$${_:{workspaceRoot}}",
 							"group": [],
-							"cobcargs": ["-free", "-x"],
 							"coverage": true,
 							"verbose": false
 						}
@@ -212,7 +191,6 @@
 							"arguments": "",
 							"cwd": "$${_:{workspaceRoot}}",
 							"group": [],
-							"cobcargs": ["-free", "-x"],
 							"verbose": false
 						}
 					},
@@ -228,7 +206,6 @@
 							"arguments": "",
 							"cwd": "$${_:{workspaceRoot}}",
 							"group": [],
-							"cobcargs": ["-free", "-x"],
 							"verbose": false
 						}
 					}
@@ -248,12 +225,6 @@
 					"type": "string",
 					"description": "Path to the `gdb` command",
 					"default": "gdb",
-					"scope": "application"
-				},
-				"superbol-vscode-debug.pathToCobc": {
-					"type": "string",
-					"description": "Path to the `cobc` command",
-					"default": "/usr/local/gnucobol/bin/cobc",
 					"scope": "application"
 				},
 				"superbol-vscode-debug.pathToLibCob": {

@@ -19,10 +19,9 @@ export class DebuggerSettings {
 
     constructor() {
         this.extensionSettings = vscode.workspace.getConfiguration("superbol-vscode-debug");
+// Get SuperBOL base extension settings (for instance to get LibCob path)
+// Though shouls should be obtained by querying the extension instead ?
         this.superbolExtensionSettings = vscode.workspace.getConfiguration("superbol");
-
-console.log(this.getWithFallback<string>(this.superbolExtensionSettings, "path"));
-
     }
 
     private getWithFallback<T>(settings: vscode.WorkspaceConfiguration, section: string): T {
@@ -43,10 +42,6 @@ console.log(this.getWithFallback<string>(this.superbolExtensionSettings, "path")
 
     public get gdbpath(): string {
         return this.getWithFallback<string>(this.extensionSettings, "pathToGDB");
-    }
-
-    public get cobcpath(): string {
-        return this.getWithFallback<string>(this.extensionSettings, "pathToCobc");
     }
 
     public get libcobpath(): string {
