@@ -20,26 +20,43 @@ class GdbConfigurationProvider implements vscode.DebugConfigurationProvider {
       _token?: vscode.CancellationToken):
         vscode.ProviderResult<vscode.DebugConfiguration>
     {
-        config.gdbargs = ["-q", "--interpreter=mi2"];
         const settings = new DebuggerSettings();
-        if (config.cwd === undefined) {
-            config.cwd = settings.cwd;
+        if (config.name === undefined) {
+            config.name = "SuperBOL: default debug";
+        }
+        if (config.type === undefined) {
+            config.type = "gdb";
+        }
+        if (config.request === undefined) {
+            config.request = "launch";
         }
         if (config.target === undefined) {
-            config.target = settings.target;
-        }
-        if (config.group === undefined) {
-            config.group = [];
+            config.target = "${file}";
         }
         if (config.arguments === undefined) {
             config.arguments = "";
         }
+        if (config.cwd === undefined) {
+            config.cwd = "${workspaceRoot}";
+        }
+        if (config.group === undefined) {
+            config.group = [];
+        }
         if (config.gdbpath === undefined) {
             config.gdbpath = settings.gdbpath;
         }
-        if (config.cobcpath === undefined) {
-            config.cobcpath = settings.cobcpath;
+        if (config.libcobpath === undefined) {
+            config.libcobpath = settings.libcobpath;
         }
+        if (config.env === undefined) {
+            config.env = { ["LD_LIBRARY_PATH"] : config.libcobpath };
+        } else {
+            config.env.LD_LIBRARY_PATH = config.libcobpath + ";" + config.env.LD_LIBRARY_PATH;
+        }
+        if (config.coverage === undefined) {
+            config.coverage = true;
+        }
+        config.gdbargs = ["-q", "--interpreter=mi2"];
         return config;
     }
 
@@ -48,36 +65,39 @@ class GdbConfigurationProvider implements vscode.DebugConfigurationProvider {
       _token?: vscode.CancellationToken):
         vscode.ProviderResult<vscode.DebugConfiguration[]> {
         const launchConfigDefault: vscode.DebugConfiguration = {
-          name: "Superbol debugger",
+          name: "SuperBOL: debug launch",
           type: "gdb",
           request: "launch",
-          cobcargs: [
-            "-free",
-            "-x"
-          ],
-          coverage: true
+          target: "${file}",
+          arguments: "",
+          cwd: "${workspaceRoot}",
+          group: [],
+          coverage: true,
+          verbose: false
         };
 
         const attachLocalConfiguration: vscode.DebugConfiguration = {
-          name: "Superbol debugger attach local",
+          name: "SuperBOL: debug attach local",
           type: "gdb",
           request: "attach",
-          cobcargs: [
-            "-free",
-            "-x"
-          ],
-          pid: "${input:pid}"
+          pid: "${input:pid}",
+          target: "${file}",
+          arguments: "",
+          cwd: "${workspaceRoot}",
+          group: [],
+          verbose: false
         };
 
         const attachRemoteConfiguration: vscode.DebugConfiguration = {
-          name: "Superbol debugger attach remote",
+          name: "SuperBOL: debug attach remote",
           type: "gdb",
           request: "attach",
-          cobcargs: [
-            "-free",
-            "-x"
-          ],
-          remoteDebugger: "${input:remoteDebugger}"
+          remoteDebugger: "${input:remoteDebugger}",
+          target: "${file}",
+          arguments: "",
+          cwd: "${workspaceRoot}",
+          group: [],
+          verbose: false
         }
 
         return [

@@ -203,6 +203,9 @@ export class SourceMap {
         if (!nativePath.isAbsolute(fileCobol)) {
             fileCobol = nativePath.join(this.cwd, fileCobol);
         }
+        if ((process.platform === "win32") && (/[a-z]:/.test(fileCobol))) {
+            fileCobol = fileCobol.charAt(0).toUpperCase() + fileCobol.slice(1);
+        }
         return this.lines.find(e => e.fileCobol === fileCobol && e.lineCobol === lineCobol) ?? new Line('', 0, '', 0);
     }
 

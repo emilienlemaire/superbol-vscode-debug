@@ -37,8 +37,6 @@ export class MI2 extends EventEmitter implements IDebugger {
   constructor(
     public gdbpath: string,
     public gdbArgs: string[],
-    public cobcpath: string,
-    public cobcArgs: string[],
     procEnv: NodeJS.ProcessEnv,
     public verbose: boolean,
     public noDebug: boolean | null)
@@ -73,57 +71,6 @@ export class MI2 extends EventEmitter implements IDebugger {
         reject(new Error("cwd does not exist."));
       }
 
-      if (this.noDebug) {
-        const args = (this.cobcArgs || [])
-        .concat([target])
-        .concat(group)
-        .concat(['-job=' + targetargs]);
-        this.process = ChildProcess.spawn(this.cobcpath, args, {cwd: cwd, env: this.procEnv});
-        this.process.stderr.on("data", ((data: string) => {
-          this.log("stderr", data);
-        }));
-        this.process.stdout.on("data", ((data: string) => {
-          this.log("stdout", data);
-        }));
-        this.process.on("exit", (() => {
-          this.emit("quit");
-        }));
-        return;
-      }
-
-      const args = (this.cobcArgs || []).concat([
-        '-g',                //enable debugger
-        '-fsource-location', //generate source location code
-        '-ftraceall',        // generate trace code
-        '-Q',                // (with `--coverage`): enable C linker coverage
-        '--coverage',
-        '-A',                // (with `--coverage`): enable C compiler coverage
-        '--coverage',
-        '-v',                // verbose mode
-        target
-      ]).concat(group);
-      const buildProcess = ChildProcess.spawn(this.cobcpath, args, {cwd: cwd, env: this.procEnv});
-      buildProcess.stderr.on('data', (data: string) => {
-        if (this.verbose)
-          this.log("stderr", data);
-        let match: RegExpExecArray;
-        do {
-          match = gcovRegex.exec(data);
-          if (match) {
-            this.gcovFiles.add(match[1].split('.').slice(0, -1).join('.'));
-          }
-        } while (match);
-      });
-      buildProcess.on('exit', (code) => {
-        if (code !== 0) {
-          this.emit("quit");
-          return;
-        }
-
-        if (this.verbose) {
-          this.log("stderr", `COBOL file ${target} compiled with exit code: ${code}`);
-        }
-
         try {
           this.map = new SourceMap(cwd, [target].concat(group));
         } catch (e) {
@@ -157,7 +104,7 @@ export class MI2 extends EventEmitter implements IDebugger {
           this.emit("debug-ready");
           resolve(undefined);
         }, reject);
-      });
+
     });
   }
 
@@ -171,28 +118,6 @@ export class MI2 extends EventEmitter implements IDebugger {
       if (!fs.existsSync(cwd)) {
         reject(new Error("cwd does not exist."));
       }
-
-      const args = (this.cobcArgs || []).concat([
-        '-g',
-        '-fsource-location',
-        '-ftraceall',
-        '-v',
-        target
-      ]).concat(group);
-      const buildProcess = ChildProcess.spawn(this.cobcpath, args, {cwd: cwd, env: this.procEnv});
-      buildProcess.stderr.on('data', (data: string) => {
-        if (this.verbose)
-          this.log("stderr", data);
-      });
-      buildProcess.on('exit', (code) => {
-        if (code !== 0) {
-          this.emit("quit");
-          return;
-        }
-
-        if (this.verbose) {
-          this.log("stderr", `COBOL file ${target} compiled with exit code: ${code}`);
-        }
 
         try {
           this.map = new SourceMap(cwd, [target].concat(group));
@@ -225,7 +150,7 @@ export class MI2 extends EventEmitter implements IDebugger {
           this.emit("debug-ready");
           resolve(undefined);
         }, reject);
-      });
+
     });
   }
 

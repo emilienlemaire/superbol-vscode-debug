@@ -1,6 +1,6 @@
 {
 	"name": "superbol-vscode-debug",
-	"displayName": "Superbol debugger",
+	"displayName": "SuperBOL Debugger for GnuCOBOL",
 	"description": "Debug or execute COBOL code. No mainframe required.",
 	"keywords": [
 		"cobol",
@@ -11,16 +11,16 @@
 	],
 	"version": "2.31.37",
 	"publisher": "OCamlPro SAS",
-    "contributors": [
-        {
-            "name": "Emilien Lemaire",
-            "email": "emilien.lemaire@ocamlpro.com"
-        },
-        {
-            "name": "Olegs Kunicins",
-            "email": "olegs.kunicins@gmail.com"
-        }
-    ],
+	"contributors": [
+	{
+		"name": "Emilien Lemaire",
+		"email": "emilien.lemaire@ocamlpro.com"
+	},
+	{
+		"name": "Olegs Kunicins",
+		"email": "olegs.kunicins@gmail.com"
+	}
+	],
 	"license": "GPL-3.0",
 	"icon": "icon.png",
 	"engines": {
@@ -28,7 +28,8 @@
 	},
 	"main": "./out/src/extension",
 	"activationEvents": [
-		"onDebugResolve"
+		"onDebugResolve",
+		"onDebugInitialConfigurations"
 	],
 	"categories": [
 		"Debuggers"
@@ -54,7 +55,7 @@
 				"languages": ["cobol", "COBOL"],
 				"program": "./out/src/gdb.js",
 				"runtime": "node",
-				"label": "COBOL debugger",
+				"label": "SuperBOL Debugger for GnuCOBOL",
 				"configurationAttributes": {
 					"launch": {
 						"required": [],
@@ -79,18 +80,10 @@
 								"description": "Path to gdb",
 								"default": "gdb"
 							},
-							"cobcpath": {
+							"libcobpath": {
 								"type": "string",
-								"description": "Path to cobc",
-								"default": "cobc"
-							},
-							"cobcargs": {
-								"type": "array",
-								"description": "Extra arguments for cobc",
-								"default": [
-									"-free",
-									"-x"
-								]
+								"description": "Path to libcob",
+								"default": null
 							},
 							"group": {
 								"type": "array",
@@ -137,18 +130,10 @@
 								"description": "Path to gdb",
 								"default": "gdb"
 							},
-							"cobcpath": {
+							"libcobpath": {
 								"type": "string",
-								"description": "Path to cobc",
-								"default": "cobc"
-							},
-							"cobcargs": {
-								"type": "array",
-								"description": "Extra arguments for cobc",
-								"default": [
-									"-free",
-									"-x"
-								]
+								"description": "Path to libcob",
+								"default": null
 							},
 							"group": {
 								"type": "array",
@@ -178,82 +163,74 @@
 						}
 					}
 				},
-				"initialConfigurations": [
-					{
-						"name": "Superbol debugger",
-						"type": "gdb",
-						"request": "launch",
-						"cobcargs": [
-							"-free",
-							"-x"
-						],
-						"coverage": true
-					}
-				],
 				"configurationSnippets": [
 					{
-						"label": "Superbol: debug launch",
-						"description": "New Superbol launch request",
+						"label": "SuperBOL: debug launch",
+						"description": "New SuperBOL launch request",
 						"body": {
+							"name": "${2:SuperBOL: debug launch}",
 							"type": "gdb",
 							"request": "launch",
-							"name": "${2: Superbol debugger}"
+							"target": "$${_:{file}}",
+							"arguments": "",
+							"cwd": "$${_:{workspaceRoot}}",
+							"group": [],
+							"coverage": true,
+							"verbose": false
 						}
 					},
 					{
-						"label": "Superbol: debug attach local",
-						"description": "New Superbol attach local request",
+						"label": "SuperBOL: debug attach local",
+						"description": "New SuperBOL attach local request",
 						"body": {
+							"name": "${2:SuperBOL: debug attach local}",
 							"type": "gdb",
 							"request": "attach",
-							"name": "${2: Superbol debugger}",
-							"pid": "${3:0}"
+							"pid": "${3:0}",
+							"target": "$${_:{file}}",
+							"arguments": "",
+							"cwd": "$${_:{workspaceRoot}}",
+							"group": [],
+							"verbose": false
 						}
 					},
 					{
-						"label": "Superbol: debug attach remote",
-						"description": "New Superbol attach remote request",
+						"label": "SuperBOL: debug attach remote",
+						"description": "New SuperBOL attach remote request",
 						"body": {
+							"name": "${2:SuperBOL: debug attach remote}",
 							"type": "gdb",
 							"request": "attach",
-							"name": "${2: Superbol debugger}",
-							"remoteDebugger": "${3:host:port}"
+							"remoteDebugger": "${3:host:port}",
+							"target": "$${_:{file}}",
+							"arguments": "",
+							"cwd": "$${_:{workspaceRoot}}",
+							"group": [],
+							"verbose": false
 						}
 					}
 				]
 			}
 		],
 		"configuration": {
-			"title": "Superbol Debugger",
+			"title": "SuperBOL Debugger",
 			"properties": {
-				"superbol_debugger.display_variable_attributes": {
+				"superbol-vscode-debug.displayVariableAttributes": {
 					"type": "boolean",
 					"default": false,
-					"description": "Displaying Data Storages and Fields attributes(e.g. size of Alphanumerics or digits and scale of numerics).",
+					"description": "Displaying Data Storages and Fields attributes (e.g. size of Alphanumerics or digits and scale of numerics).",
 					"scope": "resource"
 				},
-				"superbol_debugger.cwd": {
+				"superbol-vscode-debug.pathToGDB": {
 					"type": "string",
-					"default": "${workspaceRoot}",
-					"description": "Path to project",
-					"scope": "application"
-				},
-				"superbol_debugger.target": {
-					"type": "string",
-					"description": "Path to source code",
-					"default": "${file}",
-					"scope": "application"
-				},
-				"superbol_debugger.gdbpath": {
-					"type": "string",
-					"description": "Path to gdb",
+					"description": "Path to the `gdb` command",
 					"default": "gdb",
 					"scope": "application"
 				},
-				"superbol_debugger.cobcpath": {
+				"superbol-vscode-debug.pathToLibCob": {
 					"type": "string",
-					"description": "Path to cobc",
-					"default": "cobc",
+					"description": "Path to the folder containing `libcob`",
+					"default": "/usr/local/gnucobol/lib",
 					"scope": "application"
 				}
 			}
