@@ -12,7 +12,7 @@ import {
   Thread,
   ThreadEvent
 } from '@vscode/debugadapter';
-import { DebugProtocol } from 'vscode-debugprotocol';
+import { DebugProtocol } from '@vscode/debugprotocol';
 import { Breakpoint, VariableObject } from './debugger';
 import { MINode } from './parser.mi2';
 import { MI2 } from './mi2';
@@ -125,11 +125,13 @@ export class GDBDebugSession extends DebugSession {
             this.handlePause(undefined);
         },
         (err: Error) => {
-          this.sendErrorResponse(response, 100, `Failed to start MI Debugger: ${err.toString()}`);
+          this.sendErrorResponse(response, 100,
+             `Failed to start MI Debugger: ${err.toString()}`);
         });
       },
       /*onrejected:*/ (err: Error) => {
-        this.sendErrorResponse(response, 103, `Failed to load MI Debugger: ${err.toString()}`);
+        this.sendErrorResponse(response, 103,
+           `Failed to load MI Debugger: ${err.toString()}`);
       });
   }
 
@@ -139,10 +141,9 @@ export class GDBDebugSession extends DebugSession {
       void
   {
     if (!args.pid && !args.remoteDebugger) {
-      this.sendErrorResponse(
-        response,
-        100,
-        `Failed to start MI Debugger: pid or remoteDebugger is mandatory`);
+      this.sendErrorResponse (response, 100,
+        `Failed to start MI Debugger: PID or remote-debugger argument
+         required`);
       return;
     }
 
@@ -186,11 +187,13 @@ export class GDBDebugSession extends DebugSession {
             this.handlePause(undefined);
         },
         (err: Error) => {
-          this.sendErrorResponse(response, 100, `Failed to start MI Debugger: ${err.toString()}`);
+          this.sendErrorResponse(response, 100,
+             `Failed to start MI Debugger: ${err.toString()}`);
         });
       },
       (err: Error) => {
-        this.sendErrorResponse(response, 103, `Failed to load MI Debugger: ${err.toString()}`);
+        this.sendErrorResponse(response, 103,
+	   `Failed to load MI Debugger: ${err.toString()}`);
       });
   }
 

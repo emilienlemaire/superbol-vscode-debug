@@ -163,7 +163,7 @@ export class MI2 extends EventEmitter implements IDebugger {
     }
 
     const cmds = [
-      this.sendCommand("gdb-set target-async on", false),
+      this.sendCommand("gdb-set mi-async on", false),
       this.sendCommand("gdb-set print repeats 1000", false),
       this.sendCommand("gdb-set args " + targetargs, false),
       this.sendCommand("environment-directory \"" + escape(cwd) + "\"", false),
