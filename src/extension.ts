@@ -37,7 +37,7 @@ class GdbConfigurationProvider implements vscode.DebugConfigurationProvider {
             config.arguments = "";
         }
         if (config.cwd === undefined) {
-            config.cwd = "${workspaceRoot}";
+            config.cwd = "${workspaceFolder}";
         }
         if (config.group === undefined) {
             config.group = [];
@@ -65,37 +65,38 @@ class GdbConfigurationProvider implements vscode.DebugConfigurationProvider {
       _token?: vscode.CancellationToken):
         vscode.ProviderResult<vscode.DebugConfiguration[]> {
         const launchConfigDefault: vscode.DebugConfiguration = {
-          name: "SuperBOL: debug launch",
+          name: "SuperBOL: debug (launch)",
           type: "gdb",
           request: "launch",
+          preLaunchTask: "Superbol: build (debug)",
           target: "${file}",
           arguments: "",
-          cwd: "${workspaceRoot}",
+          cwd: "${workspaceFolder}",
           group: [],
           coverage: true,
           verbose: false
         };
 
         const attachLocalConfiguration: vscode.DebugConfiguration = {
-          name: "SuperBOL: debug attach local",
+          name: "SuperBOL: debug (attach local)",
           type: "gdb",
           request: "attach",
           pid: "${input:pid}",
           target: "${file}",
           arguments: "",
-          cwd: "${workspaceRoot}",
+          cwd: "${workspaceFolder}",
           group: [],
           verbose: false
         };
 
         const attachRemoteConfiguration: vscode.DebugConfiguration = {
-          name: "SuperBOL: debug attach remote",
+          name: "SuperBOL: debug (attach remote)",
           type: "gdb",
           request: "attach",
-          remoteDebugger: "${input:remoteDebugger}",
+          remoteDebugger: "${input:remote-debugger}",
           target: "${file}",
           arguments: "",
-          cwd: "${workspaceRoot}",
+          cwd: "${workspaceFolder}",
           group: [],
           verbose: false
         }
