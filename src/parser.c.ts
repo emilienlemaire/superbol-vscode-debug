@@ -1,4 +1,4 @@
-import * as readline from "n-readlines";
+import readline from "n-readlines";
 import * as nativePathFromPath from "path";
 import {DebuggerVariable, Attribute, VariableType} from "./debugger";
 
