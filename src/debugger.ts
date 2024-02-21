@@ -1,5 +1,5 @@
 import {MINode} from "./parser.mi2";
-import {DebugProtocol} from "@vscode/debugprotocol";
+import {DebugProtocol} from "@vscode/debugprotocol/lib/debugProtocol";
 import {removeLeadingZeroes} from "./functions";
 import {SourceMap} from "./parser.c";
 
@@ -467,7 +467,7 @@ export class DebuggerVariable {
 }
 
 export interface IDebugger {
-    load(cwd: string, target: string, targetargs: string, group: string[]): Thenable<any>;
+    load(cwd: string, target: string, targetargs: string, group: string[], gdbtty: boolean): Thenable<any>;
 
     attach(cwd: string, target: string, targetargs: string, group: string[]): Thenable<any>;
 

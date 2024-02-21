@@ -14,8 +14,8 @@ import {
 import * as os from "os";
 import * as nativePath from "path";
 import * as ChildProcess from "child_process";
-import { SourceMap } from "./parser.c";
-import { GcovData, loadGcovData } from "./gcov";
+import {SourceMap} from "./parser.c";
+import {GcovData, loadGcovData} from "./gcov";
 
 export class CoverageStatus implements Disposable {
     private coverages: GcovData[] = [];
@@ -56,9 +56,9 @@ export class CoverageStatus implements Disposable {
     }
 
     public async show(cFiles: string[], sourceMap: SourceMap) {
-      this.coverages = await loadGcovData(cFiles);
-      this.sourceMap = sourceMap;
-      this.updateStatus();
+        this.coverages = await loadGcovData(cFiles);
+        this.sourceMap = sourceMap;
+        this.updateStatus();
     }
 
     public dispose() {
@@ -74,22 +74,22 @@ export class CoverageStatus implements Disposable {
         const red: Range[] = [];
         const green: Range[] = [];
         for (const coverage of this.coverages) {
-          for (const file of coverage.files) {
-            for (const line of file.lines) {
-                if (this.sourceMap.hasLineCobol(file.file, line.line_number)) {
-                    const map = this.sourceMap.getLineCobol(file.file, line.line_number);
-                    if (editor.document.uri.fsPath !== map.fileCobol) {
-                        continue;
-                    }
-                    const range = new Range(map.lineCobol - 1, 0, map.lineCobol - 1, Number.MAX_VALUE);
-                    if (line.count > 0) {
-                        green.push(range);
-                    } else {
-                        red.push(range);
+            for (const file of coverage.files) {
+                for (const line of file.lines) {
+                    if (this.sourceMap.hasLineCobol(file.file, line.line_number)) {
+                        const map = this.sourceMap.getLineCobol(file.file, line.line_number);
+                        if (editor.document.uri.fsPath !== map.fileCobol) {
+                            continue;
+                        }
+                        const range = new Range(map.lineCobol - 1, 0, map.lineCobol - 1, Number.MAX_VALUE);
+                        if (line.count > 0) {
+                            green.push(range);
+                        } else {
+                            red.push(range);
+                        }
                     }
                 }
             }
-          }
         }
         if (red.length === 0 || !this.highlight) {
             editor.setDecorations(this.RED, []);

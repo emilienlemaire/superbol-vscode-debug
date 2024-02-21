@@ -9,7 +9,7 @@
 		"debug",
 		"code coverage"
 	],
-	"version": "2.31.37",
+	"version": "3.32.0",
 	"publisher": "OCamlPro SAS",
 	"contributors": [
 	{
@@ -104,6 +104,20 @@
 								"type": "boolean",
 								"description": "Debug GDB",
 								"default": false
+							},
+							"gdbtty": {
+								"type": [
+									"boolean",
+									"string"
+								],
+								"description": "Enable external display for debug",
+								"default": false,
+								"enum": [
+									true,
+									false,
+									"vscode",
+									"external"
+								]
 							}
 						}
 					},
@@ -176,7 +190,8 @@
 							"cwd": "$${_:{workspaceRoot}}",
 							"group": [],
 							"coverage": true,
-							"verbose": false
+							"verbose": false,
+							"gdbtty": true
 						}
 					},
 					{
@@ -237,26 +252,29 @@
 		}
 	},
 	"scripts": {
-		"prepublish": "tsc -p ./",
+		"prepare": "tsc -p ./",
 		"compile": "tsc -p ./",
 		"watch": "tsc -w -p ./",
-		"test": "mocha -u tdd ./out/test/"
+		"test": "mocha -u tdd ./out/test/",
+		"lint": "eslint -c .eslintrc.js --ext .ts ./"
 	},
 	"devDependencies": {
 		"@types/mocha": "^10.0.1",
-		"@types/node": "^20.3.2",
+		"@types/node": "^20.6.3",
 		"@types/vscode": "^1.44.0",
-		"@typescript-eslint/eslint-plugin": "^5.60.1",
-		"@typescript-eslint/parser": "^5.60.1",
-		"eslint": "^8.43.0",
+		"@typescript-eslint/eslint-plugin": "^6.7.2",
+		"@typescript-eslint/parser": "^6.7.2",
+		"@vscode/test-electron": "^2.3.4",
+		"eslint": "^8.50.0",
 		"eslint_d": "^12.2.1",
 		"mocha": "^10.2.0",
-		"typescript": "^5.1.6",
-		"vscode-debugadapter-testsupport": "^1.40.3"
+		"typescript": "^5.2.2",
+		"@vscode/debugadapter-testsupport": "^1.51.0"
 	},
 	"dependencies": {
-		"@vscode/debugadapter": "^1.40.0",
-		"@vscode/debugprotocol": "^1.40.0",
-		"n-readlines": "^1.0.0"
+		"n-readlines": "^1.0.1",
+		"package_name": "^1.0.0",
+		"@vscode/debugprotocol": "^1.51.0",
+		"@vscode/debugadapter": "^1.51.0"
 	}
 }

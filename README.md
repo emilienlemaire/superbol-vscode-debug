@@ -10,11 +10,10 @@
 <h4 align="center">Debug COBOL code from VS Code or VSCodium.</h4>
 
 <p align="center">
-  <img src="https://img.shields.io/github/workflow/status/OlegKunitsyn/gnucobol-debug/Node.js%20CI.svg?label=Node.js%20CI" />
   <img src="https://img.shields.io/github/v/tag/OlegKunitsyn/gnucobol-debug" />
   <img src="https://img.shields.io/visual-studio-marketplace/d/OlegKunitsyn.gnucobol-debug" />
   <img src="https://img.shields.io/visual-studio-marketplace/i/OlegKunitsyn.gnucobol-debug" />
-  <img src="https://github.com/OlegKunitsyn/gnucobol-debug/workflows/Node.js%20CI/badge.svg" />
+  <img src="https://github.com/OlegKunitsyn/gnucobol-debug/actions/workflows/nodejs.yml/badge.svg" />
 </p>
 
 An extension to debug or execute GnuCOBOL code. Forked from [COBOL Degub](https://github.com/OlegKunitsyn/gnucobol-debug).
@@ -27,6 +26,7 @@ An extension to debug or execute GnuCOBOL code. Forked from [COBOL Degub](https:
 - [Attaching to a running process](#attaching-to-a-running-process)
   - [Local Process](#local-process)
   - [Remote Debugger (GDBServer)](#remote-debugger-gdbserver)
+- [Display application output in a separate window](#display-application-output-in-a-separate-window)
 - [Documentation](#documentation)
 - [Troubleshooting](#troubleshooting)
 - [Development](#development)
@@ -139,7 +139,45 @@ Here's an example:
 }
 ```
 
-Your contribution is always welcome!
+### Display application output in a separate window
+Add `gdbtty` property to your `launch.json`. Here’s an example:
+```json
+{
+            "name": "COBOL debugger",
+            "type": "gdb",
+            "request": "launch",
+            "cobcargs": [
+                "-free",
+                "-x"
+            ],
+            "coverage": false,
+            "gdbtty": true
+}
+```
+![GdbTTY](gdbttydisplay.png)
+
+* Linux Requirements: `xterm`
+
+How to install xterm on Ubuntu: 
+```
+sudo apt-get install xterm
+```
+
+On Linux you can see the output of the application in Vs Code itself. Add `gdbtty` property with `vscode` value to your `launch.json`. Here is an example:
+```json
+{
+            "name": "COBOL debugger",
+            "type": "gdb",
+            "request": "launch",
+            "cobcargs": [
+                "-free",
+                "-x"
+            ],
+            "coverage": false,
+            "gdbtty": "vscode"
+}
+```
+![GdbTTY](gdbttyvscode.png)
 
 ### Documentation
 
