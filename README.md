@@ -42,7 +42,7 @@ An extension to debug or execute GnuCOBOL code. Forked from [COBOL Degub](https:
 ![Screenshot](screenshot.png)
 
 ### Requirements
-This extension is meant to work with our COBOL language extension [Superbol VSCode](https://github.com/OCamlPro/superbol-vscode-platform).
+This extension is meant to work in combination with the [SuperBOL Studio](https://github.com/OCamlPro/superbol-vscode-platform) extension for COBOL.
 
 #### Binaries
 * GnuCOBOL `cobc` 3.1+ installed.
@@ -156,13 +156,6 @@ Add `gdbtty` property to your `launch.json`. Here’s an example:
 ```
 ![GdbTTY](gdbttydisplay.png)
 
-* Linux Requirements: `xterm`
-
-How to install xterm on Ubuntu: 
-```
-sudo apt-get install xterm
-```
-
 On Linux you can see the output of the application in Vs Code itself. Add `gdbtty` property with `vscode` value to your `launch.json`. Here is an example:
 ```json
 {
@@ -179,9 +172,10 @@ On Linux you can see the output of the application in Vs Code itself. Add `gdbtt
 ```
 ![GdbTTY](gdbttyvscode.png)
 
-### Documentation
+You can also use these options with `gdbtty`: `xterm`, `gnome-terminal`, `konsole` and `xfce4-terminal`.
 
-For a more in depth documentation please check the [Superbol Documentation](https://ocamlpro.com/superbol/)
+### Documentation
+For a more in depth documentation please check the [SuperBOL Documentation](https://get-superbol.com/studio/)
 
 ### Troubleshooting
 Add `verbose` property to your `launch.json` and start debugging session. In `DEBUG CONSOLE` you will see complete communication log between `gdb` and VS Code. Here's an example:
