@@ -11,7 +11,6 @@ import * as vscode from 'vscode';
 const nonOutput = /(^(?:\d*|undefined)[*+\-=~@&^])([^*+\-=~@&]{1,})/;
 const gdbRegex = /(?:\d*|undefined)\(gdb\)/;
 const numRegex = /\d+/;
-const gcovRegex = /"([0-9a-z_\-/\s\\:]+\.o)"/gi;
 let NEXT_TERM_ID = 1;
 // 002 - stepOver in routines with "perform"
 let subroutine = -1;
@@ -70,45 +69,47 @@ export class MI2 extends EventEmitter implements IDebugger {
                 reject(new Error("cwd does not exist."));
             }
 
-                try {
-                    this.map = new SourceMap(cwd, [target].concat(group));
-                } catch (e) {
-                    this.log('stderr', (<Error>e).toString());
-                }
+            let target_no_ext = target.split('.').slice(0, -1).join('.');
+            this.gcovFiles.add(target_no_ext);
+            try {
+                this.map = new SourceMap(cwd, [target].concat(group));
+            } catch (e) {
+                this.log('stderr', (<Error>e).toString());
+            }
 
-                if (this.verbose) {
-                    this.log("stderr", this.map.toString());
-                }
+            if (this.verbose) {
+                this.log("stderr", this.map.toString());
+            }
 
-                target = path.resolve(cwd, path.basename(target));
-                target = target.split('.').slice(0, -1).join('.');
-                // FIXME: the following should prefix "cobcrun.exe" if in "module mode", see #13
-                // FIXME: if we need this code twice then add a comment why, otherwise move to a new function
-                if (process.platform === "win32") {
-                    target = target + '.exe';
-                }
+            target = path.resolve(cwd, path.basename(target));
+            target = target_no_ext;
+            // FIXME: the following should prefix "cobcrun.exe" if in "module mode", see #13
+            // FIXME: if we need this code twice then add a comment why, otherwise move to a new function
+            if (process.platform === "win32") {
+                target = target + '.exe';
+            }
 
-                // 001-gdbtty - Extension for debugging on a separate tty using xterm - start
-                let gdbttyParameters = [];
-                if (gdbtty) {
-                    await this.gbdTtyTerminal(gdbtty, target, gdbttyParameters);
-                }
-                // 001-gdbtty-End
+            // 001-gdbtty - Extension for debugging on a separate tty using xterm - start
+            let gdbttyParameters = [];
+            if (gdbtty) {
+                await this.gbdTtyTerminal(gdbtty, target, gdbttyParameters);
+            }
+            // 001-gdbtty-End
 
-                this.process = ChildProcess.spawn(this.gdbpath, this.gdbArgs, { cwd: cwd, env: this.procEnv });
-                this.process.stdout.on("data", (data: string) => this.stdout(data));
-                this.process.stderr.on("data", (data: string) => { this.log("stderr", data); });
-                this.process.on("exit", (() => { this.emit("quit"); }));
-                this.process.on("error", (err) => { this.emit("launcherror", err); });
-                const promises = this.initCommands(target, targetargs, cwd);
-                // 001-gdbtty - additional parameters for gdb
-                for (let item of gdbttyParameters)
-                    promises.push(this.sendCommand("gdb-set " + item, false));
-                //001
-                Promise.all(promises).then(() => {
-                    this.emit("debug-ready");
-                    resolve(true);
-                }, reject);
+            this.process = ChildProcess.spawn(this.gdbpath, this.gdbArgs, { cwd: cwd, env: this.procEnv });
+            this.process.stdout.on("data", (data: string) => this.stdout(data));
+            this.process.stderr.on("data", (data: string) => { this.log("stderr", data); });
+            this.process.on("exit", (() => { this.emit("quit"); }));
+            this.process.on("error", (err) => { this.emit("launcherror", err); });
+            const promises = this.initCommands(target, targetargs, cwd);
+            // 001-gdbtty - additional parameters for gdb
+            for (let item of gdbttyParameters)
+                promises.push(this.sendCommand("gdb-set " + item, false));
+            //001
+            Promise.all(promises).then(() => {
+                this.emit("debug-ready");
+                resolve(true);
+            }, reject);
 
         });
     }
@@ -124,33 +125,33 @@ export class MI2 extends EventEmitter implements IDebugger {
                 reject(new Error("cwd does not exist."));
             }
 
-                try {
-                    this.map = new SourceMap(cwd, [target].concat(group));
-                } catch (e) {
-                    this.log('stderr', (<Error>e).toString());
-                }
+            try {
+                this.map = new SourceMap(cwd, [target].concat(group));
+            } catch (e) {
+                this.log('stderr', (<Error>e).toString());
+            }
 
-                if (this.verbose) {
-                    this.log("stderr", this.map.toString());
-                }
+            if (this.verbose) {
+                this.log("stderr", this.map.toString());
+            }
 
-                target = path.resolve(cwd, path.basename(target));
-                target = target.split('.').slice(0, -1).join('.');
-                // FIXME: the following should prefix "cobcrun.exe" if in "module mode", see #13
-                if (process.platform === "win32") {
-                    target = target + '.exe';
-                }
+            target = path.resolve(cwd, path.basename(target));
+            target = target.split('.').slice(0, -1).join('.');
+            // FIXME: the following should prefix "cobcrun.exe" if in "module mode", see #13
+            if (process.platform === "win32") {
+                target = target + '.exe';
+            }
 
-                this.process = ChildProcess.spawn(this.gdbpath, this.gdbArgs, { cwd: cwd, env: this.procEnv });
-                this.process.stdout.on("data", (data: string) => this.stdout(data));
-                this.process.stderr.on("data", (data: string) => { this.log("stderr", data); });
-                this.process.on("exit", () => { this.emit("quit"); });
-                this.process.on("error", (err) => { this.emit("launcherror", err); });
-                const promises = this.initCommands(target, targetargs, cwd);
-                Promise.all(promises).then(() => {
-                    this.emit("debug-ready");
-                    resolve(true);
-                }, reject);
+            this.process = ChildProcess.spawn(this.gdbpath, this.gdbArgs, { cwd: cwd, env: this.procEnv });
+            this.process.stdout.on("data", (data: string) => this.stdout(data));
+            this.process.stderr.on("data", (data: string) => { this.log("stderr", data); });
+            this.process.on("exit", () => { this.emit("quit"); });
+            this.process.on("error", (err) => { this.emit("launcherror", err); });
+            const promises = this.initCommands(target, targetargs, cwd);
+            Promise.all(promises).then(() => {
+                this.emit("debug-ready");
+                resolve(true);
+            }, reject);
 
         });
     }
@@ -273,7 +274,7 @@ export class MI2 extends EventEmitter implements IDebugger {
                                     }
                                     if (reason == "breakpoint-hit") {
                                         if (!this.map.hasLineCobol(parsed.record('frame.fullname'), parseInt(parsed.record('frame.line')))) {
-                                            if(this.lastStepCommand==this.continue && parsed.record("disp")=="del")
+                                            if (this.lastStepCommand == this.continue && parsed.record("disp") == "del")
                                                 void this.lastStepCommand();
                                             else
                                                 this.stepOver(); // 002 - stepInto/stepOut in routines with "perform" 
@@ -387,7 +388,7 @@ export class MI2 extends EventEmitter implements IDebugger {
             const to = setTimeout(() => {
                 process.kill(-proc.pid);
             }, 1000);
-            this.process.on("exit", function (_code) {
+            this.process.on("exit", function(_code) {
                 clearTimeout(to);
             });
         }
@@ -400,7 +401,7 @@ export class MI2 extends EventEmitter implements IDebugger {
             const to = setTimeout(() => {
                 process.kill(-proc.pid);
             }, 1000);
-            this.process.on("exit", function (_code) {
+            this.process.on("exit", function(_code) {
                 clearTimeout(to);
             });
         }
@@ -462,7 +463,7 @@ export class MI2 extends EventEmitter implements IDebugger {
      * The command goes into the underlying function, then pauses at the first line.
      */
     stepInto(): Thenable<boolean> {
-        this.lastStepCommand = () => this.stepInto() ;
+        this.lastStepCommand = () => this.stepInto();
         if (this.verbose) {
             this.log("stderr", "stepInto");
         }
@@ -489,7 +490,7 @@ export class MI2 extends EventEmitter implements IDebugger {
      * The comand executes the function, then pauses at the next line outside.
      */
     stepOut(): Thenable<boolean> {
-        this.lastStepCommand = () => this.stepOut() ;
+        this.lastStepCommand = () => this.stepOut();
         if (this.verbose) {
             this.log("stderr", "stepOut");
         }
@@ -936,8 +937,8 @@ export class MI2 extends EventEmitter implements IDebugger {
                 const sleep = async (milliseconds) => {
                     await new Promise(resolve => setTimeout(resolve, milliseconds));
                 }
-                let try_find=0;
-                while(try_find<4){
+                let try_find = 0;
+                while (try_find < 4) {
                     await sleep(500);
                     xterm_device = this.findTtyName(target, gdbtty);
                     try_find++;
@@ -1038,7 +1039,7 @@ export class MI2 extends EventEmitter implements IDebugger {
         const gnome_terminal_args = [
             "--title", "GnuCOBOL Debug - " + dispTarget,
             "--",
-            "bash", "-c","echo 'GnuCOBOL DEBUG';" + "sleep " + sleepVal + ";"
+            "bash", "-c", "echo 'GnuCOBOL DEBUG';" + "sleep " + sleepVal + ";"
         ]
         const gnome_process = ChildProcess.spawn("gnome-terminal", gnome_terminal_args, {
             detached: true,
@@ -1068,8 +1069,8 @@ export class MI2 extends EventEmitter implements IDebugger {
     createTerminal(gdbtty, sleepVal, target) {
         let findTerminal = true;
         if (gdbtty != "vscode") {
-            if (typeof gdbtty === 'string' && gdbtty!="external") {  
-                if(this.isTerminalInstalled(gdbtty)){
+            if (typeof gdbtty === 'string' && gdbtty != "external") {
+                if (this.isTerminalInstalled(gdbtty)) {
                     findTerminal = false;
                     switch (gdbtty) {
                         case "xterm":
@@ -1087,14 +1088,14 @@ export class MI2 extends EventEmitter implements IDebugger {
                     }
                 }
             }
-            if(findTerminal){
-                if(this.isTerminalInstalled("xterm")){
+            if (findTerminal) {
+                if (this.isTerminalInstalled("xterm")) {
                     this.createXtermTerminal(sleepVal, target);
-                }else if(this.isTerminalInstalled("gnome-terminal")){
+                } else if (this.isTerminalInstalled("gnome-terminal")) {
                     this.createGNOMETerminal(sleepVal, target);
-                }else if(this.isTerminalInstalled("xfce4-terminal")){
+                } else if (this.isTerminalInstalled("xfce4-terminal")) {
                     this.createXFCETerminal(sleepVal, target);
-                }else if(this.isTerminalInstalled("konsole")){
+                } else if (this.isTerminalInstalled("konsole")) {
                     this.createKDETerminal(sleepVal, target);
                 }
             }
