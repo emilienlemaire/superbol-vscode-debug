@@ -14,8 +14,8 @@ import {
 import * as os from "os";
 import * as nativePath from "path";
 import * as ChildProcess from "child_process";
-import {SourceMap} from "./parser.c";
-import {GcovData, loadGcovData} from "./gcov";
+import { SourceMap } from "./parser.c";
+import { GcovData, loadGcovData } from "./gcov";
 
 export class CoverageStatus implements Disposable {
     private coverages: GcovData[] = [];
@@ -35,7 +35,7 @@ export class CoverageStatus implements Disposable {
         outline: 'none',
         backgroundColor: 'rgba(20, 250, 20, 0.2)'
     });
-    readonly COMMAND = 'gdb.coverage-toggle';
+    private readonly COMMAND = 'gdb.coverage-toggle';
     private highlight: boolean = true;
 
     constructor() {
@@ -58,11 +58,22 @@ export class CoverageStatus implements Disposable {
     public async show(cFiles: string[], sourceMap: SourceMap) {
         this.coverages = await loadGcovData(cFiles);
         this.sourceMap = sourceMap;
+        this.highlight = true;
         this.updateStatus();
     }
 
     public dispose() {
         this.statusBar.dispose();
+    }
+
+    public updateHighlight(highlighted: boolean) {
+        this.highlight = highlighted;
+        this.updateStatus();
+    }
+
+    public hide() {
+        this.highlight = false;
+        this.updateStatus();
     }
 
     private updateStatus() {

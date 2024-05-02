@@ -12,12 +12,12 @@ import {
     Thread,
     ThreadEvent
 } from '@vscode/debugadapter';
-import {DebugProtocol} from '@vscode/debugprotocol';
-import {Breakpoint, VariableObject} from './debugger';
-import {MINode} from './parser.mi2';
-import {MI2} from './mi2';
-import {CoverageStatus} from './coverage';
-import {DebuggerSettings} from './settings';
+import { DebugProtocol } from '@vscode/debugprotocol';
+import { Breakpoint, VariableObject } from './debugger';
+import { MINode } from './parser.mi2';
+import { MI2 } from './mi2';
+import { CoverageStatus } from './coverage';
+import { DebuggerSettings } from './settings';
 
 const STACK_HANDLES_START = 1000;
 const VAR_HANDLES_START = 512 * 256 + 1000;
@@ -67,6 +67,7 @@ export class GDBDebugSession extends DebugSession {
     coverageStatus: CoverageStatus;
     private showVariableDetails: boolean;
     private settings = new DebuggerSettings();
+    private showCoverage: boolean = true;
 
     protected initializeRequest(response: DebugProtocol.InitializeResponse, _args: DebugProtocol.InitializeRequestArguments): void {
         response.body.supportsSetVariable = true;
@@ -74,9 +75,7 @@ export class GDBDebugSession extends DebugSession {
     }
 
     protected launchRequest(response: DebugProtocol.LaunchResponse, args: LaunchRequestArguments): void {
-        if (!args.coverage) {
-            this.coverageStatus = undefined;
-        }
+        this.showCoverage = args.coverage;
         this.started = false;
         this.attached = false;
 
@@ -100,22 +99,22 @@ export class GDBDebugSession extends DebugSession {
         this.debugReady = false;
         this.useVarObjects = false;
         this.miDebugger.load(args.cwd, args.target, args.arguments, args.group, args.gdbtty).then(
-        /*onfulfilled:*/ () => {
-            setTimeout(() => {
-                this.miDebugger.emit("ui-break-done");
-            }, 50);
-            this.sendResponse(response);
-            this.miDebugger.start().then(() => {
-                this.started = true;
-                if (this.crashed)
-                    this.handlePause(undefined);
-            }, (err: Error) => {
-                this.sendErrorResponse(response, 100, `Failed to start MI Debugger: ${err.toString()}`);
+        /*onfulfilled:*/() => {
+                setTimeout(() => {
+                    this.miDebugger.emit("ui-break-done");
+                }, 50);
+                this.sendResponse(response);
+                this.miDebugger.start().then(() => {
+                    this.started = true;
+                    if (this.crashed)
+                        this.handlePause(undefined);
+                }, (err: Error) => {
+                    this.sendErrorResponse(response, 100, `Failed to start MI Debugger: ${err.toString()}`);
+                });
+            },
+        /*onrejected:*/(err: Error) => {
+                this.sendErrorResponse(response, 103, `Failed to load MI Debugger: ${err.toString()}`);
             });
-        },
-        /*onrejected:*/ (err: Error) => {
-            this.sendErrorResponse(response, 103, `Failed to load MI Debugger: ${err.toString()}`);
-        });
     }
 
     protected attachRequest(response: DebugProtocol.AttachResponse, args: AttachRequestArguments): void {
@@ -124,7 +123,7 @@ export class GDBDebugSession extends DebugSession {
             return;
         }
 
-        this.coverageStatus = undefined;
+        this.showCoverage = false;
         this.attached = true;
         this.started = false;
 
@@ -212,8 +211,10 @@ export class GDBDebugSession extends DebugSession {
         if (this.quit)
             return;
 
-        if (this.coverageStatus !== undefined) {
+        if (this.showCoverage) {
             this.coverageStatus.show(this.miDebugger.getGcovFiles(), this.miDebugger.getSourceMap()).catch((err: Error) => console.log(err));
+        } else {
+            this.coverageStatus.hide();
         }
 
         this.quit = true;
@@ -277,7 +278,7 @@ export class GDBDebugSession extends DebugSession {
                 const finalBrks: DebugProtocol.Breakpoint[] = [];
                 brkpoints.forEach(brkp => {
                     if (brkp[0])
-                        finalBrks.push({line: brkp[1].line, verified: brkp[0]});
+                        finalBrks.push({ line: brkp[1].line, verified: brkp[0] });
                 });
                 response.body = {
                     breakpoints: finalBrks
@@ -445,8 +446,8 @@ export class GDBDebugSession extends DebugSession {
                         type: stackVariable.displayableType,
                         variablesReference: reference
                     });
-                    if(stackVariable.hasChildren){
-                        const child= stackVariable.children;
+                    if (stackVariable.hasChildren) {
+                        const child = stackVariable.children;
                         for (var childs of stackVariable.children.entries()) {
                             var key = childs[0];
                             globalThis.varGlobal.push({
