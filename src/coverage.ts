@@ -56,6 +56,7 @@ export class CoverageStatus implements Disposable {
     }
 
     public async show(cFiles: string[], sourceMap: SourceMap) {
+        this.highlight = true;
         this.coverages = await loadGcovData(cFiles);
         this.sourceMap = sourceMap;
         this.updateStatus();
@@ -63,6 +64,15 @@ export class CoverageStatus implements Disposable {
 
     public dispose() {
         this.statusBar.dispose();
+    }
+
+    public setHighlight(highlighted: boolean) {
+        this.highlight = highlighted;
+    }
+
+    public hide() {
+        this.highlight = false;
+        this.updateStatus();
     }
 
     private updateStatus() {

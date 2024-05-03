@@ -67,6 +67,7 @@ export class GDBDebugSession extends DebugSession {
     coverageStatus: CoverageStatus;
     private showVariableDetails: boolean;
     private settings = new DebuggerSettings();
+    private showCoverage: boolean = true;
 
     protected initializeRequest(response: DebugProtocol.InitializeResponse, _args: DebugProtocol.InitializeRequestArguments): void {
         response.body.supportsSetVariable = true;
@@ -74,9 +75,7 @@ export class GDBDebugSession extends DebugSession {
     }
 
     protected launchRequest(response: DebugProtocol.LaunchResponse, args: LaunchRequestArguments): void {
-        if (!args.coverage) {
-            this.coverageStatus = undefined;
-        }
+        this.showCoverage = args.coverage;
         this.started = false;
         this.attached = false;
 
@@ -124,7 +123,7 @@ export class GDBDebugSession extends DebugSession {
             return;
         }
 
-        this.coverageStatus = undefined;
+        this.showCoverage = false;
         this.attached = true;
         this.started = false;
 
@@ -212,8 +211,10 @@ export class GDBDebugSession extends DebugSession {
         if (this.quit)
             return;
 
-        if (this.coverageStatus !== undefined) {
+        if (this.showCoverage) {
             this.coverageStatus.show(this.miDebugger.getGcovFiles(), this.miDebugger.getSourceMap()).catch((err: Error) => console.log(err));
+        } else {
+            this.coverageStatus.hide();
         }
 
         this.quit = true;

@@ -70,6 +70,8 @@ export class MI2 extends EventEmitter implements IDebugger {
                 reject(new Error("cwd does not exist."));
             }
 
+                let target_no_ext = target.split('.').slice(0, -1).join('.');
+                this.gcovFiles.add(target_no_ext);
                 try {
                     this.map = new SourceMap(cwd, [target].concat(group));
                 } catch (e) {
