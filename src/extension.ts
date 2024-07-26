@@ -71,7 +71,7 @@ class GdbConfigurationProvider implements vscode.DebugConfigurationProvider {
             config.env.LD_LIBRARY_PATH = config.libcobpath + ";" + config.env.LD_LIBRARY_PATH;
         }
         if (config.coverage === undefined) {
-            config.coverage = true;
+            config.coverage = false;
         }
         if (config.gdbtty === undefined) {
             config.gdbtty = true;
@@ -92,7 +92,7 @@ class GdbConfigurationProvider implements vscode.DebugConfigurationProvider {
           arguments: "",
           cwd: "${workspaceFolder}",
           group: [],
-          coverage: true,
+          coverage: false,
           verbose: false,
           gdbtty: true
         };
