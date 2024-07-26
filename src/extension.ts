@@ -10,15 +10,18 @@ const MAX_COLUMN_INDEX = 300;
 const COBOL_RESERVED_WORDS = ["perform", "move", "to", "set", "add", "subtract", "call", "inquire", "modify", "invoke", "if", "not", "end-if", "until", "varying", "evaluate", "true", "when", "false", "go", "thru", "zeros", "spaces", "zero", "space", "inspect", "tallying", "exit", "paragraph", "method", "cycle", "from", "by", "and", "or", "of", "length", "function", "program", "synchronized", "end-synchronized", "string", "end-string", "on", "reference", "value", "returning", "giving", "replacing", "goback", "all", "open", "i-o", "input", "output", "close", "compute", "unstring", "using", "delete", "start", "read", "write", "rewrite", "with", "lock", "else", "upper-case", "lower-case", "display", "accept", "at", "clear-screen", "initialize", "line", "col", "key", "is", "self", "null", "stop", "run", "upon", "environment-name", "environment-value"]
 
 export function activate(context: vscode.ExtensionContext) {
+    const provider = new GdbConfigurationProvider();
+    const factory = new GdbAdapterDescriptorFactory(new CoverageStatus(), new GDBDebugSession());
     context.subscriptions.push(
-        vscode.debug.registerDebugConfigurationProvider('gdb', new GdbConfigurationProvider()),
-        vscode.debug.registerDebugAdapterDescriptorFactory('gdb', new GdbAdapterDescriptorFactory(new CoverageStatus(), new GDBDebugSession())),
+        vscode.debug.registerDebugConfigurationProvider('gdb', provider),
+        vscode.debug.registerDebugAdapterDescriptorFactory('gdb', factory, vscode.DebugConfigurationProviderTriggerKind.Dynamic),
         vscode.languages.registerEvaluatableExpressionProvider('GnuCOBOL', new GnuCOBOLEvalExpressionFactory()),
         vscode.languages.registerEvaluatableExpressionProvider('GnuCOBOL31', new GnuCOBOLEvalExpressionFactory()),
         vscode.languages.registerEvaluatableExpressionProvider('GnuCOBOL3.1', new GnuCOBOLEvalExpressionFactory()),
         vscode.languages.registerEvaluatableExpressionProvider('GnuCOBOL32', new GnuCOBOLEvalExpressionFactory()),
         vscode.languages.registerEvaluatableExpressionProvider('GnuCOBOL3.2', new GnuCOBOLEvalExpressionFactory()),
         vscode.languages.registerEvaluatableExpressionProvider('COBOL', new GnuCOBOLEvalExpressionFactory()),
+        factory,
     );
 }
 
