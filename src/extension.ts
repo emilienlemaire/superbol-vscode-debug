@@ -113,7 +113,7 @@ class GdbConfigurationProvider implements vscode.DebugConfigurationProvider {
           name: "SuperBOL: debug (attach remote)",
           type: "superbol-gdb",
           request: "attach",
-          "remote-debugger": "${input:remote-debugger}",
+          remoteDebugger: "${input:remoteDebugger}",
           target: "${file}",
           arguments: "",
           cwd: "${workspaceFolder}",
