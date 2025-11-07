@@ -1,3 +1,7 @@
+## Next
+
+* Fix handling of programs with dashes `-` in their name [PR #14](https://github.com/ocamlpro/superbol-vscode-debug/pull/14)
+
 ## 3.32.0
 * Updates [Issue #138](https://github.com/OlegKunitsyn/gnucobol-debug/issues/138) by MARCOS MARTINS DUMA
   * Migrate from TSLint to ESLint
