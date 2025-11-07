@@ -74,7 +74,7 @@ class GdbConfigurationProvider implements vscode.DebugConfigurationProvider {
             config.coverage = false;
         }
         if (config.gdbtty === undefined) {
-            config.gdbtty = true;
+            config.gdbtty = false;
         }
         return config;
     }
@@ -94,7 +94,7 @@ class GdbConfigurationProvider implements vscode.DebugConfigurationProvider {
           group: [],
           coverage: false,
           verbose: false,
-          gdbtty: true
+          gdbtty: false
         };
 
         const attachLocalConfiguration: vscode.DebugConfiguration = {

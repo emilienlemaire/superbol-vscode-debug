@@ -1,5 +1,6 @@
 ## Next
 
+* Set `gdbtty` to `false` by default [PR #15](https://github.com/ocamlpro/superbol-vscode-debug/pull/15)
 * Fix handling of programs with dashes `-` in their name [PR #14](https://github.com/ocamlpro/superbol-vscode-debug/pull/14)
 
 ## 3.32.0

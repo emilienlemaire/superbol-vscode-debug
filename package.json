@@ -195,7 +195,7 @@
 							"group": [],
 							"coverage": false,
 							"verbose": false,
-							"gdbtty": true
+							"gdbtty": false
 						}
 					},
 					{
