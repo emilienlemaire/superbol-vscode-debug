@@ -35,6 +35,13 @@ const programExit = /\/\*\sProgram\s\exit\s+\*\//i;
 
 globalThis.varOccurs = [];
 
+function cobEncodeInvalidChars (s: string): string {
+    // TODO: properly mimick `libcob:cob_encode_invalid_chars`
+    // Meaning: Also replace any character in /[^a-zA-Z0-9-]/ into "_XX", where
+    // XX is the hexadecimal ascii code of the characher being replaced
+    return s.replace("-","__");
+}
+
 export class Line {
     fileCobol: string;
     fileC: string;
@@ -104,7 +111,7 @@ export class SourceMap {
             }
             match = functionRegex.exec(line);
             if (match) {
-                functionName = match[1].toLowerCase() + "_";
+                functionName = cobEncodeInvalidChars(match[1]).toLowerCase() + "_";
             }
             match = procedureRegex.exec(line);
             if (match && !match[2]) {
