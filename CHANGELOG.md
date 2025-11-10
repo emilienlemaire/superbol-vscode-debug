@@ -1,5 +1,6 @@
 ## Next
 
+* Enable launching a debug session outside a workspace [PR #16](https://github.com/ocamlpro/superbol-vscode-debug/pull/16)
 * Set `gdbtty` to `false` by default [PR #15](https://github.com/ocamlpro/superbol-vscode-debug/pull/15)
 * Fix handling of programs with dashes `-` in their name [PR #14](https://github.com/ocamlpro/superbol-vscode-debug/pull/14)
 
