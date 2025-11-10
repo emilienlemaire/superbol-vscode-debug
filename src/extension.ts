@@ -29,7 +29,7 @@ export function deactivate() {
 }
 
 class GdbConfigurationProvider implements vscode.DebugConfigurationProvider {
-    public resolveDebugConfiguration(_folder: vscode.WorkspaceFolder | undefined, config: vscode.DebugConfiguration, _token?: vscode.CancellationToken): vscode.ProviderResult<vscode.DebugConfiguration> {
+    public resolveDebugConfiguration(workspaceFolder: vscode.WorkspaceFolder | undefined, config: vscode.DebugConfiguration, _token?: vscode.CancellationToken): vscode.ProviderResult<vscode.DebugConfiguration> {
         config.gdbargs = ["-q", "--interpreter=mi2"];
         const settings = new DebuggerSettings();
         if (config.name === undefined) {
@@ -41,7 +41,7 @@ class GdbConfigurationProvider implements vscode.DebugConfigurationProvider {
         if (config.request === undefined) {
             config.request = "launch";
         }
-        if (config.preLaunchTask === undefined) {
+        if (config.preLaunchTask === undefined && workspaceFolder != undefined) {
             config.preLaunchTask = "SuperBOL: build (debug)";
         } else if (config.preLaunchTask === "none" ||
                    config.preLaunchTask === "") {
@@ -52,9 +52,6 @@ class GdbConfigurationProvider implements vscode.DebugConfigurationProvider {
         }
         if (config.arguments === undefined) {
             config.arguments = "";
-        }
-        if (config.cwd === undefined) {
-            config.cwd = "${workspaceFolder}";
         }
         if (config.group === undefined) {
             config.group = [];
@@ -90,7 +87,6 @@ class GdbConfigurationProvider implements vscode.DebugConfigurationProvider {
           preLaunchTask: "SuperBOL: build (debug)",
           target: "${file}",
           arguments: "",
-          cwd: "${workspaceFolder}",
           group: [],
           coverage: false,
           verbose: false,
@@ -104,7 +100,6 @@ class GdbConfigurationProvider implements vscode.DebugConfigurationProvider {
           pid: "${input:pid}",
           target: "${file}",
           arguments: "",
-          cwd: "${workspaceFolder}",
           group: [],
           verbose: false
         };
@@ -116,7 +111,6 @@ class GdbConfigurationProvider implements vscode.DebugConfigurationProvider {
           remoteDebugger: "${input:remoteDebugger}",
           target: "${file}",
           arguments: "",
-          cwd: "${workspaceFolder}",
           group: [],
           verbose: false
         }

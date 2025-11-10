@@ -15,6 +15,7 @@ import {
 import {DebugProtocol} from '@vscode/debugprotocol';
 import {Breakpoint, VariableObject} from './debugger';
 import {MINode} from './parser.mi2';
+import * as path from "path";
 import {MI2} from './mi2';
 import {CoverageStatus} from './coverage';
 import {DebuggerSettings} from './settings';
@@ -28,7 +29,7 @@ class ExtendedVariable {
 }
 
 export interface LaunchRequestArguments extends DebugProtocol.LaunchRequestArguments {
-    cwd: string;
+    cwd: string | null;
     target: string;
     arguments: string;
     gdbpath: string;
@@ -41,7 +42,7 @@ export interface LaunchRequestArguments extends DebugProtocol.LaunchRequestArgum
 }
 
 export interface AttachRequestArguments extends DebugProtocol.LaunchRequestArguments {
-    cwd: string;
+    cwd: string | null;
     target: string;
     arguments: string;
     gdbpath: string;
@@ -98,7 +99,9 @@ export class GDBDebugSession extends DebugSession {
         this.crashed = false;
         this.debugReady = false;
         this.useVarObjects = false;
-        this.miDebugger.load(args.cwd, args.target, args.arguments, args.group, args.gdbtty).then(
+        // Run in the target executables' directory, unless specificed.
+        let cwd = args.cwd ?? path.dirname (args.target);
+        this.miDebugger.load(cwd, args.target, args.arguments, args.group, args.gdbtty).then(
         /*onfulfilled:*/ () => {
             setTimeout(() => {
                 this.miDebugger.emit("ui-break-done");
@@ -146,7 +149,9 @@ export class GDBDebugSession extends DebugSession {
         this.crashed = false;
         this.debugReady = false;
         this.useVarObjects = false;
-        this.miDebugger.attach(args.cwd, args.target, args.arguments, args.group).then(() => {
+        // Run in the target executables' directory, unless specificed.
+        let cwd = args.cwd ?? path.dirname (args.target);
+        this.miDebugger.attach(cwd, args.target, args.arguments, args.group).then(() => {
             setTimeout(() => {
                 this.miDebugger.emit("ui-break-done");
             }, 50);
