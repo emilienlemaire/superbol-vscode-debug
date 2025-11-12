@@ -405,6 +405,7 @@ export class DebuggerVariable {
         public cobolName: string,
         public cName: string,
         public functionName: string,
+        public rootFileC: string,
         public attribute: Attribute = null,
         public size: number = null,
         public value: string = null,
