@@ -32,6 +32,7 @@ export class MI2 extends EventEmitter implements IDebugger {
     private currentToken = 1;
     private handlers: { [index: number]: (_: MINode) => unknown } = {};
     private breakpoints: Map<Breakpoint, number> = new Map();
+    private ignoredBreakpoints: Set<Breakpoint> = new Set();
     private buffer: string;
     private errbuf: string;
     private process: ChildProcess.ChildProcess;
@@ -79,7 +80,7 @@ export class MI2 extends EventEmitter implements IDebugger {
                 }
 
                 if (this.verbose) {
-                    this.log("stderr", this.map.toString());
+                    this.log("stderr", this.map.toString("created"));
                 }
 
                 target = path.resolve(cwd, path.basename(target));
@@ -133,7 +134,7 @@ export class MI2 extends EventEmitter implements IDebugger {
                 }
 
                 if (this.verbose) {
-                    this.log("stderr", this.map.toString());
+                    this.log("stderr", this.map.toString("created"));
                 }
 
                 target = path.resolve(cwd, path.basename(target));
@@ -172,6 +173,7 @@ export class MI2 extends EventEmitter implements IDebugger {
             this.sendCommand("gdb-set charset UTF-8", false),
             this.sendCommand("environment-directory \"" + escape(cwd) + "\"", false),
             this.sendCommand("file-exec-and-symbols \"" + escape(target) + "\"", false),
+            this.sendCommand("gdb-set stop-on-solib-events 1", false),
         ];
         return cmds;
     }
@@ -309,6 +311,9 @@ export class MI2 extends EventEmitter implements IDebugger {
                                             this.log("stderr", "Program exited with code " + <string>parsed.record("exit-code"));
                                         }
                                         this.emit("quit", parsed);
+                                    } else if (reason == "solib-event") {
+                                        this.onSolibEvent (parsed);
+                                        this.resume ();
                                     } else {
                                         if (!this.map.hasLineCobol(<string>parsed.record('frame.fullname'), parseInt(<string>parsed.record('frame.line')))) {
                                             void this.continue();
@@ -320,15 +325,29 @@ export class MI2 extends EventEmitter implements IDebugger {
                                         }
                                     }
                                 } else {
-                                    if (this.verbose) {
-                                        this.log("stderr", JSON.stringify(parsed));
-                                    }
+                                    this.debug (() => JSON.stringify(parsed));
                                 }
                             } else if (record.type == "notify") {
                                 if (record.asyncClass == "thread-created") {
                                     this.emit("thread-created", parsed);
                                 } else if (record.asyncClass == "thread-exited") {
                                     this.emit("thread-exited", parsed);
+                                } else if (record.asyncClass == "library-loaded") {
+                                    // Possibly unreachable if `stop-on-solib-events` is on; still handle in case.
+                                    let libname = record.output.find((e) => e[0] == "target-name")?.[1];
+                                    if (this.map.addLib (libname)) {
+                                        this.debug (() => this.map.toString ("updated"));
+                                        this.reloadBreakPoints ();
+                                    }
+                                } else if (record.asyncClass == "library-unloaded") {
+                                    // Ditto: possibly unreachable if `stop-on-solib-events` is on; still handle in case.
+                                    let libname = record.output.find((e) => e[0] == "target-name")?.[1];
+                                    if (this.map.remLib (libname)) {
+                                        this.debug (() => this.map.toString ("updated"));
+                                        this.reloadBreakPoints ();
+                                    }
+                                } else {
+                                    this.debug (() => JSON.stringify(parsed));
                                 }
                             }
                         }
@@ -345,6 +364,25 @@ export class MI2 extends EventEmitter implements IDebugger {
                 }
             }
         });
+    }
+
+    private onSolibEvent(node: MINode): void {
+        const added: [string, any][] = node.record("added") ?? [];
+        const removed: [string, any][] = node.record("removed") ?? [];
+        const isLib = (lib: [string, any]) => lib[0] == "library";
+        let libsChanged = false;
+        libsChanged = added.filter(isLib).reduce((libsChanged, lib) => {
+            this.debug("loaded library:", lib[1]);
+            return this.map.addLib(lib[1]) || libsChanged;
+        }, libsChanged);
+        libsChanged = removed.filter(isLib).reduce((libsChanged, lib) => {
+            this.debug("unloaded library:", lib[1]);
+            return this.map.remLib(lib[1]) || libsChanged;
+        }, libsChanged);
+        if (libsChanged) {
+            this.debug (() => this.map.toString ("updated"));
+            this.reloadBreakPoints ();
+        }
     }
 
     start(attachTarget?: string): Thenable<boolean> {
@@ -430,6 +468,14 @@ export class MI2 extends EventEmitter implements IDebugger {
                 resolve(info.resultRecords.resultClass == "running");
             }, reject);
         });
+    }
+
+    private resume () {
+        if (this.lastStepCommand != undefined) {
+            void this.lastStepCommand ();
+        } else {
+            void this.continue ();
+        }
     }
 
     /**
@@ -562,6 +608,15 @@ export class MI2 extends EventEmitter implements IDebugger {
         return Promise.all(promisses);
     }
 
+    private reloadBreakPoints(): Thenable<[boolean, Breakpoint][]> {
+        // TODO: ignore previously set breakpoints after library unloading?
+        // Library unloading should mostly happen at the end of executions,
+        // so we can probaly let gdb deal with those (and live with the warnings).
+        let breakpoints = Array.from (this.ignoredBreakpoints);
+        this.ignoredBreakpoints.clear ();
+        return this.loadBreakPoints (breakpoints);
+    }
+
     setBreakPointCondition(bkptNum: number, condition: string): Thenable<any> {
         if (this.verbose) {
             this.log("stderr", "setBreakPointCondition");
@@ -595,6 +650,11 @@ export class MI2 extends EventEmitter implements IDebugger {
 
             const map = this.map.getLineC(breakpoint.file, breakpoint.line);
             if (map.fileC === '' && map.lineC === 0) {
+                this.debug (() => [
+                    "addBreakPoint: ignoring breakpoint for unknown source file:",
+                    JSON.stringify(breakpoint)
+                ]);
+                this.ignoredBreakpoints.add(breakpoint);
                 return;
             }
 
@@ -640,7 +700,12 @@ export class MI2 extends EventEmitter implements IDebugger {
         }
         return new Promise((resolve, _reject) => {
             if (!this.breakpoints.has(breakpoint)) {
-                return resolve(false);
+                if (this.ignoredBreakpoints.has(breakpoint)) {
+                    this.ignoredBreakpoints.delete(breakpoint);
+                    return resolve(true);
+                } else {
+                    return resolve(false);
+                }
             }
             this.sendCommand("break-delete " + this.breakpoints.get(breakpoint).toString()).then((result: MINode) => {
                 if (result.resultRecords.resultClass == "done") {
@@ -658,9 +723,12 @@ export class MI2 extends EventEmitter implements IDebugger {
         return new Promise((resolve, _reject) => {
             this.sendCommand("break-delete").then((result) => {
                 if (result.resultRecords.resultClass == "done") {
+                    this.ignoredBreakpoints.clear ();
                     this.breakpoints.clear();
                     resolve(true);
-                } else resolve(false);
+                } else {
+                    resolve(false);
+                }
             }, () => {
                 resolve(false);
             });
@@ -884,6 +952,19 @@ export class MI2 extends EventEmitter implements IDebugger {
 
     private log(type: string, msg: string): void {
         this.emit("msg", type, msg[msg.length - 1] == '\n' ? msg : (msg + "\n"));
+    }
+
+    private debug (...msg: (string | (() => (string | string[])))[]) {
+        if (this.verbose) {
+            this.log ("stderr", msg.flatMap (f => {
+                if (typeof (f) == "string") {
+                    return [f];
+                } else {
+                    const r = f ();
+                    return (typeof (r) == "string") ? [r] : r;
+                }
+            }).join (' '));
+        }
     }
 
     sendUserInput(command: string, threadId: number = 0, frameLevel: number = 0): Thenable<any> {
