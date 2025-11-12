@@ -74,14 +74,12 @@ export class MI2 extends EventEmitter implements IDebugger {
                 let target_no_ext = target.split('.').slice(0, -1).join('.');
                 this.gcovFiles.add(target_no_ext);
                 try {
-                    this.map = new SourceMap(cwd, [target].concat(group));
+                    this.map = new SourceMap(cwd, [target].concat(group), ((l: any) => this.debug (l)));
                 } catch (e) {
                     this.log('stderr', (<Error>e).toString());
                 }
 
-                if (this.verbose) {
-                    this.log("stderr", this.map.toString("created"));
-                }
+                this.debug(() => this.map.toString("created"));
 
                 target = path.resolve(cwd, path.basename(target));
                 target = target.split('.').slice(0, -1).join('.');
@@ -128,7 +126,7 @@ export class MI2 extends EventEmitter implements IDebugger {
             }
 
                 try {
-                    this.map = new SourceMap(cwd, [target].concat(group));
+                    this.map = new SourceMap(cwd, [target].concat(group), ((l: any) => this.debug (l)));
                 } catch (e) {
                     this.log('stderr', (<Error>e).toString());
                 }
@@ -954,17 +952,28 @@ export class MI2 extends EventEmitter implements IDebugger {
         this.emit("msg", type, msg[msg.length - 1] == '\n' ? msg : (msg + "\n"));
     }
 
-    private debug (...msg: (string | (() => (string | string[])))[]) {
+    private debug(...msg: (string | (() => (string | string[])))[]) {
         if (this.verbose) {
-            this.log ("stderr", msg.flatMap (f => {
+            this.log("stderr", msg.flatMap(f => {
                 if (typeof (f) == "string") {
                     return [f];
                 } else {
-                    const r = f ();
+                    const r = f();
                     return (typeof (r) == "string") ? [r] : r;
                 }
-            }).join (' '));
+            }).join(' '));
         }
+    }
+
+    private info(...msg: (string | (() => (string | string[])))[]) {
+        this.log("stdout", msg.flatMap(f => {
+            if (typeof (f) == "string") {
+                return [f];
+            } else {
+                const r = f();
+                return (typeof (r) == "string") ? [r] : r;
+            }
+        }).join(' '));
     }
 
     sendUserInput(command: string, threadId: number = 0, frameLevel: number = 0): Thenable<any> {
