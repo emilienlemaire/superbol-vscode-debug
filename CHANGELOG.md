@@ -1,5 +1,6 @@
 ## Next
 
+* Fix handling of nested subprograms [PR #18](https://github.com/ocamlpro/superbol-vscode-debug/pull/18)
 * Add support for dynamically loaded sub-modules (e.g, via CALL + literal) [PR #17](https://github.com/ocamlpro/superbol-vscode-debug/pull/17)
 * Enable launching a debug session outside a workspace [PR #16](https://github.com/ocamlpro/superbol-vscode-debug/pull/16)
 * Set `gdbtty` to `false` by default [PR #15](https://github.com/ocamlpro/superbol-vscode-debug/pull/15)
