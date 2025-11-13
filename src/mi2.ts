@@ -40,7 +40,7 @@ export class MI2 extends EventEmitter implements IDebugger {
     private hasCobGetFieldStringFunction = true;
     private hasCobPutFieldStringFunction = true;
 
-    constructor(public gdbpath: string, public gdbArgs: string[], procEnv: NodeJS.ProcessEnv, public verbose: boolean, public noDebug: boolean, public gdbtty: boolean, public cobcrunPath: string, public useCobcrun: boolean) {
+    constructor(public gdbpath: string, public gdbArgs: string[], procEnv: NodeJS.ProcessEnv, public verbose: boolean, public noDebug: boolean, public gdbtty: boolean, public cobcrunPath: string, public useCobcrun: boolean, public cSourcesDirs: string[]) {
         super();
         if (procEnv) {
             const env = {};
@@ -74,7 +74,11 @@ export class MI2 extends EventEmitter implements IDebugger {
                 let target_no_ext = target.split('.').slice(0, -1).join('.');
                 this.gcovFiles.add(target_no_ext);
                 try {
-                    this.map = new SourceMap(cwd, [target].concat(group), ((l: any) => this.debug (l)));
+                    this.map = new SourceMap(
+                        cwd,
+                        [target].concat(group),
+                        this.cSourcesDirs,
+                        ((l: any) => this.debug (l)));
                 } catch (e) {
                     this.log('stderr', (<Error>e).toString());
                 }
@@ -126,7 +130,13 @@ export class MI2 extends EventEmitter implements IDebugger {
             }
 
                 try {
-                    this.map = new SourceMap(cwd, [target].concat(group), ((l: any) => this.debug (l)));
+                    this.map =
+                        new SourceMap(
+                            cwd,
+                            [target].concat(group),
+                            this.cSourcesDirs,
+                            ((l: any) => this.debug (l))
+                        );
                 } catch (e) {
                     this.log('stderr', (<Error>e).toString());
                 }
@@ -167,10 +177,12 @@ export class MI2 extends EventEmitter implements IDebugger {
         let target_exec_symbol = escape(target);
         let target_args = targetargs;
         let search_dir = path.dirname(target_exec_symbol);
+        let search_dir_src = this.map.getSourcePath(target_exec_symbol);
         if (useCobcrun) {
             target_args = `-m ${target_exec_symbol} ${target_args}`
             target_exec_symbol = this.cobcrunPath;
         }
+
 
         const cmds = [
             this.sendCommand("gdb-set mi-async on", false),
@@ -180,7 +192,15 @@ export class MI2 extends EventEmitter implements IDebugger {
             this.sendCommand("environment-directory \"" + escape(cwd) + "\"", false),
             this.sendCommand("file-exec-and-symbols \"" + target_exec_symbol + "\"", false),
             this.sendCommand("gdb-set stop-on-solib-events 1", false),
+            this.sendCommand("gdb-set debug-file-directory " + search_dir_src, false),
+            this.sendCommand("gdb-set solib-search-path " + search_dir, false),
         ];
+
+        if (search_dir !== search_dir_src) {
+            cmds.push(
+                this.sendCommand(`gdb-set substitute-path ${search_dir} ${search_dir_src}`, false)
+            );
+        }
 
         return cmds;
     }
@@ -343,6 +363,7 @@ export class MI2 extends EventEmitter implements IDebugger {
                                     // Possibly unreachable if `stop-on-solib-events` is on; still handle in case.
                                     let libname = record.output.find((e) => e[0] == "target-name")?.[1];
                                     if (this.map.addLib (libname)) {
+                                        this.debug(() => `Added library to map: ${libname}`);
                                         this.debug (() => this.map.toString ("updated"));
                                         this.reloadBreakPoints ();
                                     }
@@ -361,7 +382,10 @@ export class MI2 extends EventEmitter implements IDebugger {
                     });
                     handled = true;
                 }
-                if (parsed.token == undefined && parsed.resultRecords == undefined && parsed.outOfBandRecord.length == 0) {
+                if (parsed.token == undefined
+                    && parsed.resultRecords == undefined
+                    && parsed.outOfBandRecord.length == 0)
+                {
                     handled = true;
                 }
                 if (!handled) {
