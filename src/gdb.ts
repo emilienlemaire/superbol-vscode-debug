@@ -39,12 +39,8 @@ export interface LaunchRequestArguments extends DebugProtocol.LaunchRequestArgum
     verbose: boolean;
     coverage: boolean;
     gdbtty: boolean;
-<<<<<<< HEAD
     cobcrunPath: string;
     useCobcrun: boolean;
-=======
-    module: boolean;
->>>>>>> f574cf6 (Debug module running with `cobcrun`)
 }
 
 export interface AttachRequestArguments extends DebugProtocol.LaunchRequestArguments {
