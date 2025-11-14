@@ -142,12 +142,6 @@ export class SourceMap {
         return false;
     }
 
-    public getSourcePath (target: string) : string | undefined {
-        let basename = nativePath.basename(target) + ".c";
-        this.log(`Getting source file for ${basename}`);
-        return nativePathFromPath.dirname (this.lookupSourceFile (basename));
-    }
-
     private unregister (givenFileC: string) : void {
         const [natFileC, fileC, cleanedFile] = this.ensureAbsolute (givenFileC);
         this.lines = this.lines.filter (line => line.rootFileC != fileC) ?? [];
