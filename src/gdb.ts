@@ -39,6 +39,8 @@ export interface LaunchRequestArguments extends DebugProtocol.LaunchRequestArgum
     verbose: boolean;
     coverage: boolean;
     gdbtty: boolean;
+    cobcrunPath: string;
+    useCobcrun: boolean;
 }
 
 export interface AttachRequestArguments extends DebugProtocol.LaunchRequestArguments {
@@ -80,7 +82,17 @@ export class GDBDebugSession extends DebugSession {
         this.started = false;
         this.attached = false;
 
-        this.miDebugger = new MI2(args.gdbpath, args.gdbargs, args.env, args.verbose, args.noDebug, args.gdbtty);
+        this.miDebugger =
+            new MI2(
+                args.gdbpath,
+                args.gdbargs,
+                args.env,
+                args.verbose,
+                args.noDebug,
+                args.gdbtty,
+                args.cobcrunPath,
+                args.useCobcrun,
+            );
         this.miDebugger.on("launcherror", (err: Error) => this.launchError(err));
         this.miDebugger.on("quit", () => this.quitEvent());
         this.miDebugger.on("exited-normally", () => this.quitEvent());
@@ -122,7 +134,11 @@ export class GDBDebugSession extends DebugSession {
 
     protected attachRequest(response: DebugProtocol.AttachResponse, args: AttachRequestArguments): void {
         if (!args.pid && !args.remoteDebugger) {
-            this.sendErrorResponse(response, 100, `Failed to start MI Debugger: PID or remote-debugger argument required`);
+            this.sendErrorResponse(
+                response,
+                100,
+                `Failed to start MI Debugger: PID or remote-debugger argument required`
+            );
             return;
         }
 
@@ -130,7 +146,17 @@ export class GDBDebugSession extends DebugSession {
         this.attached = true;
         this.started = false;
 
-        this.miDebugger = new MI2(args.gdbpath, args.gdbargs, args.env, args.verbose, false, false);
+        this.miDebugger =
+            new MI2(
+                args.gdbpath,
+                args.gdbargs,
+                args.env,
+                args.verbose,
+                false,
+                false,
+                "",
+                false
+            );
         this.miDebugger.on("launcherror", (err: Error) => this.launchError(err));
         this.miDebugger.on("quit", () => this.quitEvent());
         this.miDebugger.on("exited-normally", () => this.quitEvent());

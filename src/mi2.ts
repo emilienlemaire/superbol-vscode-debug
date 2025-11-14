@@ -40,7 +40,7 @@ export class MI2 extends EventEmitter implements IDebugger {
     private hasCobGetFieldStringFunction = true;
     private hasCobPutFieldStringFunction = true;
 
-    constructor(public gdbpath: string, public gdbArgs: string[], procEnv: NodeJS.ProcessEnv, public verbose: boolean, public noDebug: boolean | null, public gdbtty: boolean | null) {
+    constructor(public gdbpath: string, public gdbArgs: string[], procEnv: NodeJS.ProcessEnv, public verbose: boolean, public noDebug: boolean, public gdbtty: boolean, public cobcrunPath: string, public useCobcrun: boolean) {
         super();
         if (procEnv) {
             const env = {};
@@ -101,7 +101,7 @@ export class MI2 extends EventEmitter implements IDebugger {
                 this.process.stderr.on("data", (data: string) => { this.log("stderr", data); });
                 this.process.on("exit", (() => { this.emit("quit"); }));
                 this.process.on("error", (err) => { this.emit("launcherror", err); });
-                const promises = this.initCommands(target, targetargs, cwd);
+                const promises = this.initCommands(target, targetargs, cwd, this.useCobcrun);
                 // 001-gdbtty - additional parameters for gdb
                 for (let item of gdbttyParameters)
                     promises.push(this.sendCommand("gdb-set " + item, false));
@@ -147,7 +147,7 @@ export class MI2 extends EventEmitter implements IDebugger {
                 this.process.stderr.on("data", (data: string) => { this.log("stderr", data); });
                 this.process.on("exit", () => { this.emit("quit"); });
                 this.process.on("error", (err) => { this.emit("launcherror", err); });
-                const promises = this.initCommands(target, targetargs, cwd);
+                const promises = this.initCommands(target, targetargs, cwd, false);
                 Promise.all(promises).then(() => {
                     this.emit("debug-ready");
                     resolve(true);
@@ -156,7 +156,7 @@ export class MI2 extends EventEmitter implements IDebugger {
         });
     }
 
-    protected initCommands(target: string, targetargs: string, cwd: string) {
+    protected initCommands(target: string, targetargs: string, cwd: string, useCobcrun: boolean) {
         if (!path.isAbsolute(target)) {
             target = path.join(cwd, target);
         }
@@ -164,15 +164,24 @@ export class MI2 extends EventEmitter implements IDebugger {
             cwd = path.dirname(target);
         }
 
+        let target_exec_symbol = escape(target);
+        let target_args = targetargs;
+        let search_dir = path.dirname(target_exec_symbol);
+        if (useCobcrun) {
+            target_args = `-m ${target_exec_symbol} ${target_args}`
+            target_exec_symbol = this.cobcrunPath;
+        }
+
         const cmds = [
             this.sendCommand("gdb-set mi-async on", false),
             this.sendCommand("gdb-set print repeats 1000", false),
-            this.sendCommand("gdb-set args " + targetargs, false),
+            this.sendCommand("gdb-set args " + target_args, false),
             this.sendCommand("gdb-set charset UTF-8", false),
             this.sendCommand("environment-directory \"" + escape(cwd) + "\"", false),
-            this.sendCommand("file-exec-and-symbols \"" + escape(target) + "\"", false),
+            this.sendCommand("file-exec-and-symbols \"" + target_exec_symbol + "\"", false),
             this.sendCommand("gdb-set stop-on-solib-events 1", false),
         ];
+
         return cmds;
     }
 

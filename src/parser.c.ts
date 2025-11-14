@@ -310,6 +310,9 @@ export class SourceMap {
     }
 
     public getLineCobol(fileC: string, lineC: number): Line {
+        if (!fileC) {
+            return dummyLine;
+        }
         if (!nativePath.isAbsolute(fileC)) {
             fileC = nativePath.join(this.cwd, fileC);
         }

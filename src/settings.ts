@@ -24,4 +24,8 @@ export class DebuggerSettings {
         return this.debugSettings.get<string>("gdbtty");
     }
 
+    public get cobcrunPath(): string {
+        return this.debugSettings.get<string>("cobcrunPath");
+    }
+
 }
