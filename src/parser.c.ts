@@ -67,7 +67,7 @@ const dummyLine = new Line('', 0, '', '', 0, '');
 
 export class SourceMap {
     private cwd: string;
-    private sourcesDirs: string[] = [];
+    public sourcesDirs: string[] = [];
     private lines: Line[] = new Array<Line>();
     private variablesByCobol = new Map<string, DebuggerVariable>();
     private variablesByC = new Map<string, DebuggerVariable>();
@@ -87,24 +87,29 @@ export class SourceMap {
             this.log(`Checking for ${resolved_path}`);
             if (fs.existsSync(resolved_path)) {
                 this.sourcesDirs.push(fs.realpathSync(resolved_path));
-                this.log(`It's here`);
             }
         }
 
         this.sourcesDirs.push(this.cwd);
 
         filesCobol.forEach(e => {
-            let c_file = cFile(e);
-            for (const dir of this.sourcesDirs) {
-                let c_file_path = nativePathFromPath.join(dir, c_file);
-                if (fs.existsSync(c_file_path)) {
-                    this.register (c_file_path);
-                    break;
-                }
+            let c_file = this.lookupSourceFile (cFile (e));
+            if (c_file) {
+                this.register (c_file);
             }
         });
 
         this.log(`Resolved source dirs: ${this.sourcesDirs}`);
+    }
+
+    private lookupSourceFile (file: string) : string | undefined {
+        for (const dir of this.sourcesDirs) {
+            const filePath = nativePath.join (dir, file);
+            if (fs.existsSync (filePath)) {
+                return filePath;
+            }
+        }
+        return;
     }
 
     public addLib (libFile: string) : boolean {
@@ -113,14 +118,11 @@ export class SourceMap {
             return false;
         }
         this.loadedLibs.add (libFile);
-        for (const src of this.sourcesDirs) {
-            const c = nativePathFromPath.resolve (src, cFile (libFile));
-            this.log(`Checking for source candidate: ${c}`);
-            if (fs.existsSync (c)) {
-                this.log(`Loaded with sources: ${c}`);
-                this.register (c);
-                return true;
-            }
+        const c = this.lookupSourceFile (cFile (libFile));
+        if (c) {
+            this.log(`Loaded with sources: ${c}`);
+            this.register (c);
+            return true;
         }
         return false;
     }
@@ -130,21 +132,18 @@ export class SourceMap {
             return false;
         }
         this.loadedLibs.delete (libFile);
-        this.unregister (nativePath.resolve (this.cwd, cFile (libFile)));
-        return true;
+        const c = this.lookupSourceFile (cFile (libFile));
+        if (c) {
+            this.unregister (c);
+            return true;
+        }
+        return false;
     }
 
-    public getSourcePath (target: string) : string | null {
-        let basename = path.basename(target) + ".c";
+    public getSourcePath (target: string) : string | undefined {
+        let basename = nativePath.basename(target) + ".c";
         this.log(`Getting source file for ${basename}`);
-        for (const cSourceDir of this.sourcesDirs) {
-            let candidate = nativePath.join(cSourceDir, basename);
-            this.log(`Candidate ${candidate}`);
-            if (fs.existsSync(candidate)) {
-                return cSourceDir;
-            }
-        }
-        return null
+        return nativePathFromPath.dirname (this.lookupSourceFile (basename));
     }
 
     private unregister (givenFileC: string) : void {
@@ -194,7 +193,7 @@ export class SourceMap {
             let match = fileCobolRegex.exec(line);
             if (match) {
                 if (!nativePath.isAbsolute(match[1])) {
-                    fileCobol = nativePath.resolve(this.cwd, match[1]);
+                    fileCobol = nativePath.resolve(nativePathFromPath.dirname (fileC), match[1]);
                 } else {
                     fileCobol = match[1];
                 }
@@ -261,15 +260,9 @@ export class SourceMap {
             }
             match = fileIncludeRegex.exec(line);
             if (match) {
-                let include_file_path = match[1];
-                for (const cSourceDir of this.sourcesDirs) {
-                    let candidate = path.join(cSourceDir, match[1]);
-                    if (fs.existsSync(candidate)) {
-                        include_file_path = candidate;
-                        break;
-                    }
-                }
-                functionName = this.parse(include_file_path, prevLine, rootFileC, functionName);
+                // Note: we assume the included file is in the same dir as the current file.
+                const filename = nativePath.resolve (nativePathFromPath.dirname (rootFileC), match[1]);
+                functionName = this.parse(filename, prevLine, rootFileC, functionName);
             }
             match = versionRegex.exec(line);
             if (match) {

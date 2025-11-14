@@ -103,7 +103,7 @@ export class GDBDebugSession extends DebugSession {
         this.crashed = false;
         this.debugReady = false;
         this.useVarObjects = false;
-        // Run in the target executables' directory, unless specificed.
+        // Run in the target executables' directory, unless specificed; becomes '.' if target is a module name.
         let cwd = args.cwd ?? path.dirname (args.target);
         this.miDebugger.load(cwd, args.target, args.arguments, args.group, args.gdbtty).then(
         /*onfulfilled:*/ () => {

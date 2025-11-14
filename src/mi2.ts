@@ -81,8 +81,10 @@ export class MI2 extends EventEmitter implements IDebugger {
 
                 this.debug(() => this.map.toString("created"));
 
-                target = path.resolve(cwd, path.basename(target));
-                target = target.split('.').slice(0, -1).join('.');
+                if (fs.existsSync (target)) { // assume module name otherwise...
+                    target = path.resolve(cwd, path.basename(target));
+                    target = target.split('.').slice(0, -1).join('.');
+                }
                 // FIXME: the following should prefix "cobcrun.exe" if in "module mode", see #13
                 // FIXME: if we need this code twice then add a comment why, otherwise move to a new function
                 if (process.platform === "win32") {
@@ -164,32 +166,22 @@ export class MI2 extends EventEmitter implements IDebugger {
             cwd = path.dirname(target);
         }
 
-        let target_exec_symbol = escape(target);
-        let target_args = targetargs;
-        let search_dir = path.dirname(target_exec_symbol);
-        let search_dir_src = this.map.getSourcePath(target_exec_symbol);
+        let targetExec = escape(target);
         if (useCobcrun) {
-            target_args = `-m ${target_exec_symbol} ${target_args}`
-            target_exec_symbol = this.cobcrunPath;
+            targetargs = `-m ${targetExec} ${targetargs}`
+            targetExec = this.cobcrunPath;
         }
 
         const cmds = [
             this.sendCommand("gdb-set mi-async on", false),
             this.sendCommand("gdb-set print repeats 1000", false),
-            this.sendCommand("gdb-set args " + target_args, false),
+            this.sendCommand("gdb-set args " + targetargs, false),
             this.sendCommand("gdb-set charset UTF-8", false),
             this.sendCommand("environment-directory \"" + escape(cwd) + "\"", false),
-            this.sendCommand("file-exec-and-symbols \"" + target_exec_symbol + "\"", false),
+            this.sendCommand("file-exec-and-symbols \"" + targetExec + "\"", false),
             this.sendCommand("gdb-set stop-on-solib-events 1", false),
-            this.sendCommand("gdb-set debug-file-directory " + search_dir_src, false),
-            this.sendCommand("gdb-set solib-search-path " + search_dir, false),
+            this.sendCommand("gdb-set directories \"" + this.map.sourcesDirs.join('" "') + "\"", false)
         ];
-
-        if (search_dir !== search_dir_src) {
-            cmds.push(
-                this.sendCommand(`gdb-set substitute-path ${search_dir} ${search_dir_src}`, false)
-            );
-        }
 
         return cmds;
     }
