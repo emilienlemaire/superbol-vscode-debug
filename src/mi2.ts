@@ -40,16 +40,7 @@ export class MI2 extends EventEmitter implements IDebugger {
     private hasCobGetFieldStringFunction = true;
     private hasCobPutFieldStringFunction = true;
 
-    constructor(
-        public gdbpath: string,
-        public gdbArgs: string[],
-        procEnv: NodeJS.ProcessEnv,
-        public verbose: boolean,
-        public noDebug: boolean,
-        public gdbtty: boolean,
-        public cobcrunPath: string,
-        public useCobcrun: boolean,
-    ) {
+    constructor(public gdbpath: string, public gdbArgs: string[], procEnv: NodeJS.ProcessEnv, public verbose: boolean, public noDebug: boolean, public gdbtty: boolean, public cobcrunPath: string, public useCobcrun: boolean) {
         super();
         if (procEnv) {
             const env = {};

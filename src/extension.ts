@@ -64,6 +64,9 @@ class GdbConfigurationProvider implements vscode.DebugConfigurationProvider {
         if (config.libcobpath === undefined) {
             config.libcobpath = settings.libcobpath;
         }
+        if (config.cobcrunPath === undefined) {
+            config.cobcrunPath = settings.cobcrunPath;
+        }
         if (config.env === undefined) {
             config.env = { ["LD_LIBRARY_PATH"] : config.libcobpath };
         } else {
@@ -74,9 +77,6 @@ class GdbConfigurationProvider implements vscode.DebugConfigurationProvider {
         }
         if (config.gdbtty === undefined) {
             config.gdbtty = false;
-        }
-        if (config.cobcrunPath === undefined) {
-            config.cobcrunPath = settings.cobcrunPath;
         }
         return config;
     }
