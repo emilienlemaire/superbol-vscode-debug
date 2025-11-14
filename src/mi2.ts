@@ -399,7 +399,7 @@ export class MI2 extends EventEmitter implements IDebugger {
             }
             this.once("ui-break-done", () => {
                 if (!!attachTarget) {
-                    if (/^d+$/.test(attachTarget)) {
+                    if (/^\d+$/.test(attachTarget)) {
                         command = `target-attach ${attachTarget}`;
                         expectingResultClass = "done";
                     } else {
