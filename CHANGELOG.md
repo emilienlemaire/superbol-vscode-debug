@@ -1,6 +1,7 @@
 ## Next
 
 * Avoid forcing a prelaunch task on attach mode [PR #23](https://github.com/ocamlpro/superbol-vscode-debug/pull/23)
+* Fix first line of subprograms in source mapping [PR #22](https://github.com/ocamlpro/superbol-vscode-debug/pull/22)
 * Fix detection of attach target that is given as a PID [PR #21](https://github.com/ocamlpro/superbol-vscode-debug/pull/21)
 * Fix handling of nested subprograms [PR #18](https://github.com/ocamlpro/superbol-vscode-debug/pull/18)
 * Add support for dynamically loaded sub-modules (e.g, via CALL + literal) [PR #17](https://github.com/ocamlpro/superbol-vscode-debug/pull/17)
