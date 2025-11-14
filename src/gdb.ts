@@ -39,13 +39,9 @@ export interface LaunchRequestArguments extends DebugProtocol.LaunchRequestArgum
     verbose: boolean;
     coverage: boolean;
     gdbtty: boolean;
-<<<<<<< HEAD
     cobcrunPath: string;
     useCobcrun: boolean;
-=======
-    module: boolean;
-    cSourcesDirs: string[];
->>>>>>> 52fa0cb (Allow specification of c sources directory)
+    sourcesDirs: string[];
 }
 
 export interface AttachRequestArguments extends DebugProtocol.LaunchRequestArguments {
@@ -59,7 +55,7 @@ export interface AttachRequestArguments extends DebugProtocol.LaunchRequestArgum
     verbose: boolean;
     pid: string;
     remoteDebugger: string;
-    cSourcesDirs: string[];
+    sourcesDirs: string[];
 }
 
 export class GDBDebugSession extends DebugSession {
@@ -98,7 +94,7 @@ export class GDBDebugSession extends DebugSession {
                 args.gdbtty,
                 args.cobcrunPath,
                 args.useCobcrun,
-                args.cSourcesDirs,
+                args.sourcesDirs,
             );
         this.miDebugger.on("launcherror", (err: Error) => this.launchError(err));
         this.miDebugger.on("quit", () => this.quitEvent());
@@ -161,13 +157,9 @@ export class GDBDebugSession extends DebugSession {
                 args.verbose,
                 false,
                 false,
-<<<<<<< HEAD
                 "",
-                false
-=======
                 false,
-                args.cSourcesDirs,
->>>>>>> 52fa0cb (Allow specification of c sources directory)
+                args.sourcesDirs,
             );
         this.miDebugger.on("launcherror", (err: Error) => this.launchError(err));
         this.miDebugger.on("quit", () => this.quitEvent());

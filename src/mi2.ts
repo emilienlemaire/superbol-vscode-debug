@@ -40,7 +40,7 @@ export class MI2 extends EventEmitter implements IDebugger {
     private hasCobGetFieldStringFunction = true;
     private hasCobPutFieldStringFunction = true;
 
-    constructor(public gdbpath: string, public gdbArgs: string[], procEnv: NodeJS.ProcessEnv, public verbose: boolean, public noDebug: boolean, public gdbtty: boolean, public cobcrunPath: string, public useCobcrun: boolean, public cSourcesDirs: string[]) {
+    constructor(public gdbpath: string, public gdbArgs: string[], procEnv: NodeJS.ProcessEnv, public verbose: boolean, public noDebug: boolean, public gdbtty: boolean, public cobcrunPath: string, public useCobcrun: boolean, public sourcesDirs: string[]) {
         super();
         if (procEnv) {
             const env = {};
@@ -77,7 +77,7 @@ export class MI2 extends EventEmitter implements IDebugger {
                     this.map = new SourceMap(
                         cwd,
                         [target].concat(group),
-                        this.cSourcesDirs,
+                        this.sourcesDirs,
                         ((l: any) => this.debug (l)));
                 } catch (e) {
                     this.log('stderr', (<Error>e).toString());
@@ -134,7 +134,7 @@ export class MI2 extends EventEmitter implements IDebugger {
                         new SourceMap(
                             cwd,
                             [target].concat(group),
-                            this.cSourcesDirs,
+                            this.sourcesDirs,
                             ((l: any) => this.debug (l))
                         );
                 } catch (e) {

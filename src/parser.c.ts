@@ -51,7 +51,7 @@ const dummyLine = new Line('', 0, '', '', 0, '');
 
 export class SourceMap {
     private cwd: string;
-    private cSourcesDirs: string[] = [];
+    private sourcesDirs: string[] = [];
     private lines: Line[] = new Array<Line>();
     private variablesByCobol = new Map<string, DebuggerVariable>();
     private variablesByC = new Map<string, DebuggerVariable>();
@@ -62,24 +62,24 @@ export class SourceMap {
     private performLine: number = -1; // 002 - stepOver in routines with "perform"
     private isVersion2_2_or_3_1_1: boolean = false;
 
-    constructor(cwd: string, filesCobol: string[], cSourcesDirs: string[], private log: Function) {
+    constructor(cwd: string, filesCobol: string[], sourcesDirs: string[], private log: Function) {
         this.cwd = fs.realpathSync(path.resolve(cwd));
-        this.log(`Source dir arr: ${cSourcesDirs}`);
-        for (const cSourceDir of cSourcesDirs) {
+        this.log(`Source dir arr: ${sourcesDirs}`);
+        for (const cSourceDir of sourcesDirs) {
             this.log(`Trying to resolve ${cSourceDir}`);
             let resolved_path = path.resolve(this.cwd, cSourceDir);
             this.log(`Checking for ${resolved_path}`);
             if (fs.existsSync(resolved_path)) {
-                this.cSourcesDirs.push(fs.realpathSync(resolved_path));
+                this.sourcesDirs.push(fs.realpathSync(resolved_path));
                 this.log(`It's here`);
             }
         }
 
-        this.cSourcesDirs.push(this.cwd);
+        this.sourcesDirs.push(this.cwd);
 
         filesCobol.forEach(e => {
             let c_file = cFile(e);
-            for (const dir of this.cSourcesDirs) {
+            for (const dir of this.sourcesDirs) {
                 let c_file_path = path.join(dir, c_file);
                 if (fs.existsSync(c_file_path)) {
                     this.register (c_file_path);
@@ -88,7 +88,7 @@ export class SourceMap {
             }
         });
 
-        this.log(`Resolved source dir: ${this.cSourcesDirs}`);
+        this.log(`Resolved source dir: ${this.sourcesDirs}`);
     }
 
     public addLib (libFile: string) : boolean {
@@ -97,7 +97,7 @@ export class SourceMap {
             return false;
         }
         this.loadedLibs.add (libFile);
-        for (const src of this.cSourcesDirs) {
+        for (const src of this.sourcesDirs) {
             const c = path.resolve (src, cFile (libFile));
             this.log(`Checking for source candidate: ${c}`);
             if (fs.existsSync (c)) {
@@ -121,7 +121,7 @@ export class SourceMap {
     public getSourcePath (target: string) : string | null {
         let basename = path.basename(target) + ".c";
         this.log(`Getting source file for ${basename}`);
-        for (const cSourceDir of this.cSourcesDirs) {
+        for (const cSourceDir of this.sourcesDirs) {
             let candidate = path.join(cSourceDir, basename);
             this.log(`Candidate ${candidate}`);
             if (fs.existsSync(candidate)) {
@@ -276,7 +276,7 @@ export class SourceMap {
             match = fileIncludeRegex.exec(line);
             if (match) {
                 let include_file_path = match[1];
-                for (const cSourceDir of this.cSourcesDirs) {
+                for (const cSourceDir of this.sourcesDirs) {
                     let candidate = path.join(cSourceDir, match[1]);
                     if (fs.existsSync(candidate)) {
                         include_file_path = candidate;
