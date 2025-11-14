@@ -47,7 +47,8 @@ export class MI2 extends EventEmitter implements IDebugger {
         public verbose: boolean,
         public noDebug: boolean,
         public gdbtty: boolean,
-        public module: boolean,
+        public cobcrunPath: string,
+        public useCobcrun: boolean,
     ) {
         super();
         if (procEnv) {
@@ -109,7 +110,7 @@ export class MI2 extends EventEmitter implements IDebugger {
                 this.process.stderr.on("data", (data: string) => { this.log("stderr", data); });
                 this.process.on("exit", (() => { this.emit("quit"); }));
                 this.process.on("error", (err) => { this.emit("launcherror", err); });
-                const promises = this.initCommands(target, targetargs, cwd, this.module);
+                const promises = this.initCommands(target, targetargs, cwd, this.useCobcrun);
                 // 001-gdbtty - additional parameters for gdb
                 for (let item of gdbttyParameters)
                     promises.push(this.sendCommand("gdb-set " + item, false));
@@ -164,7 +165,7 @@ export class MI2 extends EventEmitter implements IDebugger {
         });
     }
 
-    protected initCommands(target: string, targetargs: string, cwd: string, module: boolean) {
+    protected initCommands(target: string, targetargs: string, cwd: string, useCobcrun: boolean) {
         if (!path.isAbsolute(target)) {
             target = path.join(cwd, target);
         }
@@ -172,13 +173,12 @@ export class MI2 extends EventEmitter implements IDebugger {
             cwd = path.dirname(target);
         }
 
-        let cobcrunPath = vscode.workspace.getConfiguration("superbol").get<string>("cobcrunPath");
         let target_exec_symbol = escape(target);
         let target_args = targetargs;
         let search_dir = path.dirname(target_exec_symbol);
-        if (module) {
+        if (useCobcrun) {
             target_args = `-m ${target_exec_symbol} ${target_args}`
-            target_exec_symbol = cobcrunPath;
+            target_exec_symbol = this.cobcrunPath;
         }
 
         const cmds = [

@@ -39,7 +39,8 @@ export interface LaunchRequestArguments extends DebugProtocol.LaunchRequestArgum
     verbose: boolean;
     coverage: boolean;
     gdbtty: boolean;
-    module: boolean;
+    cobcrunPath: string;
+    useCobcrun: boolean;
 }
 
 export interface AttachRequestArguments extends DebugProtocol.LaunchRequestArguments {
@@ -89,7 +90,8 @@ export class GDBDebugSession extends DebugSession {
                 args.verbose,
                 args.noDebug,
                 args.gdbtty,
-                args.module,
+                args.cobcrunPath,
+                args.useCobcrun,
             );
         this.miDebugger.on("launcherror", (err: Error) => this.launchError(err));
         this.miDebugger.on("quit", () => this.quitEvent());
@@ -152,6 +154,7 @@ export class GDBDebugSession extends DebugSession {
                 args.verbose,
                 false,
                 false,
+                "",
                 false
             );
         this.miDebugger.on("launcherror", (err: Error) => this.launchError(err));

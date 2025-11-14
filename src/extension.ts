@@ -75,6 +75,9 @@ class GdbConfigurationProvider implements vscode.DebugConfigurationProvider {
         if (config.gdbtty === undefined) {
             config.gdbtty = false;
         }
+        if (config.cobcrunPath === undefined) {
+            config.cobcrunPath = settings.cobcrunPath;
+        }
         return config;
     }
 
