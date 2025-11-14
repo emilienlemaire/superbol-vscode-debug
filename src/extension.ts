@@ -78,7 +78,7 @@ class GdbConfigurationProvider implements vscode.DebugConfigurationProvider {
         if (config.gdbtty === undefined) {
             config.gdbtty = false;
         }
-        config.sourcesDirs = config.sourcesDirs ?? [];
+        config.sourceDirs = config.sourceDirs ?? [];
         return config;
     }
 

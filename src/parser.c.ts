@@ -67,7 +67,7 @@ const dummyLine = new Line('', 0, '', '', 0, '');
 
 export class SourceMap {
     private cwd: string;
-    public sourcesDirs: string[] = [];
+    public sourceDirs: string[] = [];
     private lines: Line[] = new Array<Line>();
     private variablesByCobol = new Map<string, DebuggerVariable>();
     private variablesByC = new Map<string, DebuggerVariable>();
@@ -78,19 +78,19 @@ export class SourceMap {
     private performLine: number = -1; // 002 - stepOver in routines with "perform"
     private isVersion2_2_or_3_1_1: boolean = false;
 
-    constructor(cwd: string, filesCobol: string[], sourcesDirs: string[], private log: Function) {
+    constructor(cwd: string, filesCobol: string[], sourceDirs: string[], private log: Function) {
         this.cwd = fs.realpathSync(nativePathFromPath.resolve(cwd));
-        this.log(`Source dirs: ${sourcesDirs}`);
-        for (const cSourceDir of sourcesDirs) {
+        this.log(`Source dirs: ${sourceDirs}`);
+        for (const cSourceDir of sourceDirs) {
             this.log(`Trying to resolve ${cSourceDir}`);
             let resolved_path = nativePathFromPath.resolve(this.cwd, cSourceDir);
             this.log(`Checking for ${resolved_path}`);
             if (fs.existsSync(resolved_path)) {
-                this.sourcesDirs.push(fs.realpathSync(resolved_path));
+                this.sourceDirs.push(fs.realpathSync(resolved_path));
             }
         }
 
-        this.sourcesDirs.push(this.cwd);
+        this.sourceDirs.push(this.cwd);
 
         filesCobol.forEach(e => {
             let c_file = this.lookupSourceFile (cFile (e));
@@ -99,11 +99,11 @@ export class SourceMap {
             }
         });
 
-        this.log(`Resolved source dirs: ${this.sourcesDirs}`);
+        this.log(`Resolved source dirs: ${this.sourceDirs}`);
     }
 
     private lookupSourceFile (file: string) : string | undefined {
-        for (const dir of this.sourcesDirs) {
+        for (const dir of this.sourceDirs) {
             const filePath = nativePath.join (dir, file);
             if (fs.existsSync (filePath)) {
                 return filePath;

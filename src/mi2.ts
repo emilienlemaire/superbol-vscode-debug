@@ -40,7 +40,7 @@ export class MI2 extends EventEmitter implements IDebugger {
     private hasCobGetFieldStringFunction = true;
     private hasCobPutFieldStringFunction = true;
 
-    constructor(public gdbpath: string, public gdbArgs: string[], procEnv: NodeJS.ProcessEnv, public verbose: boolean, public noDebug: boolean, public gdbtty: boolean, public cobcrunPath: string, public useCobcrun: boolean, public sourcesDirs: string[]) {
+    constructor(public gdbpath: string, public gdbArgs: string[], procEnv: NodeJS.ProcessEnv, public verbose: boolean, public noDebug: boolean, public gdbtty: boolean, public cobcrunPath: string, public useCobcrun: boolean, public sourceDirs: string[]) {
         super();
         if (procEnv) {
             const env = {};
@@ -74,7 +74,7 @@ export class MI2 extends EventEmitter implements IDebugger {
                 let target_no_ext = target.split('.').slice(0, -1).join('.');
                 this.gcovFiles.add(target_no_ext);
                 try {
-                    this.map = new SourceMap(cwd, [target].concat(group), this.sourcesDirs, ((l: any) => this.debug (l)));
+                    this.map = new SourceMap(cwd, [target].concat(group), this.sourceDirs, ((l: any) => this.debug (l)));
                 } catch (e) {
                     this.log('stderr', (<Error>e).toString());
                 }
@@ -128,7 +128,7 @@ export class MI2 extends EventEmitter implements IDebugger {
             }
 
                 try {
-                    this.map = new SourceMap(cwd, [target].concat(group), this.sourcesDirs, ((l: any) => this.debug (l)));
+                    this.map = new SourceMap(cwd, [target].concat(group), this.sourceDirs, ((l: any) => this.debug (l)));
                 } catch (e) {
                     this.log('stderr', (<Error>e).toString());
                 }
@@ -180,7 +180,7 @@ export class MI2 extends EventEmitter implements IDebugger {
             this.sendCommand("environment-directory \"" + escape(cwd) + "\"", false),
             this.sendCommand("file-exec-and-symbols \"" + targetExec + "\"", false),
             this.sendCommand("gdb-set stop-on-solib-events 1", false),
-            this.sendCommand("gdb-set directories \"" + this.map.sourcesDirs.join('" "') + "\"", false)
+            this.sendCommand("gdb-set directories \"" + this.map.sourceDirs.join('" "') + "\"", false)
         ];
 
         return cmds;
