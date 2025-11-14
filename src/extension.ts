@@ -41,7 +41,9 @@ class GdbConfigurationProvider implements vscode.DebugConfigurationProvider {
         if (config.request === undefined) {
             config.request = "launch";
         }
-        if (config.preLaunchTask === undefined && workspaceFolder != undefined) {
+        if (workspaceFolder != undefined &&
+            config.request != "attach" &&
+            config.preLaunchTask === undefined) {
             config.preLaunchTask = "SuperBOL: build (debug)";
         } else if (config.preLaunchTask === "none" ||
                    config.preLaunchTask === "") {
