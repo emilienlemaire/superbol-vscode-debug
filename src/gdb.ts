@@ -84,18 +84,7 @@ export class GDBDebugSession extends DebugSession {
         this.started = false;
         this.attached = false;
 
-        this.miDebugger =
-            new MI2(
-                args.gdbpath,
-                args.gdbargs,
-                args.env,
-                args.verbose,
-                args.noDebug,
-                args.gdbtty,
-                args.cobcrunPath,
-                args.useCobcrun,
-                args.sourcesDirs,
-            );
+        this.miDebugger = new MI2(args.gdbpath, args.gdbargs, args.env, args.verbose, args.noDebug, args.gdbtty, args.cobcrunPath, args.useCobcrun, args.sourcesDirs);
         this.miDebugger.on("launcherror", (err: Error) => this.launchError(err));
         this.miDebugger.on("quit", () => this.quitEvent());
         this.miDebugger.on("exited-normally", () => this.quitEvent());
@@ -149,18 +138,7 @@ export class GDBDebugSession extends DebugSession {
         this.attached = true;
         this.started = false;
 
-        this.miDebugger =
-            new MI2(
-                args.gdbpath,
-                args.gdbargs,
-                args.env,
-                args.verbose,
-                false,
-                false,
-                "",
-                false,
-                args.sourcesDirs,
-            );
+        this.miDebugger = new MI2(args.gdbpath, args.gdbargs, args.env, args.verbose, false, false, "", false, args.sourcesDirs);
         this.miDebugger.on("launcherror", (err: Error) => this.launchError(err));
         this.miDebugger.on("quit", () => this.quitEvent());
         this.miDebugger.on("exited-normally", () => this.quitEvent());

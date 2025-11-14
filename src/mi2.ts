@@ -74,11 +74,7 @@ export class MI2 extends EventEmitter implements IDebugger {
                 let target_no_ext = target.split('.').slice(0, -1).join('.');
                 this.gcovFiles.add(target_no_ext);
                 try {
-                    this.map = new SourceMap(
-                        cwd,
-                        [target].concat(group),
-                        this.sourcesDirs,
-                        ((l: any) => this.debug (l)));
+                    this.map = new SourceMap(cwd, [target].concat(group), this.sourcesDirs, ((l: any) => this.debug (l)));
                 } catch (e) {
                     this.log('stderr', (<Error>e).toString());
                 }
@@ -130,13 +126,7 @@ export class MI2 extends EventEmitter implements IDebugger {
             }
 
                 try {
-                    this.map =
-                        new SourceMap(
-                            cwd,
-                            [target].concat(group),
-                            this.sourcesDirs,
-                            ((l: any) => this.debug (l))
-                        );
+                    this.map = new SourceMap(cwd, [target].concat(group), this.sourcesDirs, ((l: any) => this.debug (l)));
                 } catch (e) {
                     this.log('stderr', (<Error>e).toString());
                 }
@@ -182,7 +172,6 @@ export class MI2 extends EventEmitter implements IDebugger {
             target_args = `-m ${target_exec_symbol} ${target_args}`
             target_exec_symbol = this.cobcrunPath;
         }
-
 
         const cmds = [
             this.sendCommand("gdb-set mi-async on", false),
@@ -382,10 +371,7 @@ export class MI2 extends EventEmitter implements IDebugger {
                     });
                     handled = true;
                 }
-                if (parsed.token == undefined
-                    && parsed.resultRecords == undefined
-                    && parsed.outOfBandRecord.length == 0)
-                {
+                if (parsed.token == undefined && parsed.resultRecords == undefined && parsed.outOfBandRecord.length == 0) {
                     handled = true;
                 }
                 if (!handled) {
