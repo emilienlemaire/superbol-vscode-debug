@@ -174,7 +174,7 @@ export class SourceMap {
             }
             // fix new codegen
             match = procedureFixRegex.exec(line);
-            if (match && this.lines.length > 0) {
+            if (match && this.lines.length > 0 && this.lines[this.lines.length - 1].functionName == functionName) {
                 let isOldFormat = fixOlderFormat.exec(prevLine);
                 if(fileNameCompare(this.lines[this.lines.length - 1].fileCobol, fileCobol) && (this.isVersion2_2_or_3_1_1 || !isOldFormat)){ // Is it in the old format?
                     let line = this.lines.pop();
