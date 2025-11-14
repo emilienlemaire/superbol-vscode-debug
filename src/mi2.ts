@@ -45,9 +45,9 @@ export class MI2 extends EventEmitter implements IDebugger {
         public gdbArgs: string[],
         procEnv: NodeJS.ProcessEnv,
         public verbose: boolean,
-        public noDebug: boolean | null,
-        public gdbtty: boolean | null,
-        public module: boolean | null,
+        public noDebug: boolean,
+        public gdbtty: boolean,
+        public module: boolean,
     ) {
         super();
         if (procEnv) {
@@ -190,14 +190,6 @@ export class MI2 extends EventEmitter implements IDebugger {
             this.sendCommand("file-exec-and-symbols \"" + target_exec_symbol + "\"", false),
             this.sendCommand("gdb-set stop-on-solib-events 1", false),
         ];
-
-        if (module) {
-            cmds.push(
-                this.sendCommand("gdb-set solib-search-path " + search_dir, false),
-                this.sendCommand("gdb-set debug-file-directory " + search_dir, false),
-                this.sendCommand("gdb-set breakpoint pending on", false),
-            );
-        }
 
         return cmds;
     }
