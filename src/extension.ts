@@ -29,7 +29,7 @@ export function deactivate() {
 }
 
 class GdbConfigurationProvider implements vscode.DebugConfigurationProvider {
-    public resolveDebugConfiguration(workspaceFolder: vscode.WorkspaceFolder | undefined, config: vscode.DebugConfiguration, _token?: vscode.CancellationToken) : vscode.ProviderResult<vscode.DebugConfiguration> {
+    public resolveDebugConfiguration(workspaceFolder: vscode.WorkspaceFolder | undefined, config: vscode.DebugConfiguration, _token?: vscode.CancellationToken): vscode.ProviderResult<vscode.DebugConfiguration> {
         config.gdbargs = ["-q", "--interpreter=mi2"];
         const settings = new DebuggerSettings();
         if (config.name === undefined) {

@@ -113,14 +113,13 @@ export class SourceMap {
     }
 
     public addLib (libFile: string) : boolean {
-        this.log(`Loading ${libFile}`);
         if (this.loadedLibs.has (libFile)) {
             return false;
         }
         this.loadedLibs.add (libFile);
+        // this.log(`Loading ${libFile}`);
         const c = this.lookupSourceFile (cFile (libFile));
         if (c) {
-            this.log(`Loaded with sources: ${c}`);
             this.register (c);
             return true;
         }
@@ -132,6 +131,9 @@ export class SourceMap {
             return false;
         }
         this.loadedLibs.delete (libFile);
+        // this.log(`Unloading ${libFile}`);
+        // Note: assumes there was no FS changes in the meantime.
+        // Cleaner way would be to record a mapping between libs and source files.
         const c = this.lookupSourceFile (cFile (libFile));
         if (c) {
             this.unregister (c);
@@ -217,7 +219,7 @@ export class SourceMap {
             match = procedureFixRegex.exec(line);
             if (match && this.lines.length > 0 && this.lines[this.lines.length - 1].functionName == functionName) {
                 let isOldFormat = fixOlderFormat.exec(prevLine);
-                if(fileNameCompare( this.lines[this.lines.length - 1].fileCobol, fileCobol) && (this.isVersion2_2_or_3_1_1 || !isOldFormat)){ // Is it in the old format?
+                if(fileNameCompare(this.lines[this.lines.length - 1].fileCobol, fileCobol) && (this.isVersion2_2_or_3_1_1 || !isOldFormat)){ // Is it in the old format?
                     let line = this.lines.pop();
                     // this.log (`Fixing line: ${line.toString ()}`);
                     line.lineC = parseInt(match[1]);
